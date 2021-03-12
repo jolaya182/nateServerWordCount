@@ -1,0 +1,6 @@
+eventId,eventName,eventStart,eventDuration,eventLocation,eventAllDay
+5,Jog,Fri Feb 28 2020 17:00:00 GMT-0500 (Eastern Standard Time),30,Newark,FALSE
+2,Call,Fri Feb 28 2020 14:00:00 GMT-0500 (Eastern Standard Time),60,Kansas_City,FALSE
+3,Eat,Fri Feb 28 2020 14:30:00 GMT-0500 (Eastern Standard Time),60,Kansas_City,FALSE
+4,Work,Fri Feb 28 2020 15:00:00 GMT-0500 (Eastern Standard Time),30,Kansas_City,FALSE
+1,Summer,Fri Feb 28 2020 9:00:00 GMT-0500 (Eastern Standard Time),60,Portland,TRUE
