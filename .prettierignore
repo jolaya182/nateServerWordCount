@@ -1,0 +1,6 @@
+**/node_modules
+**/src/pictures
+**/dist
+src/guitarxoo.com
+src/packageJsonComands.txt
+**src/jwt/keys

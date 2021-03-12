@@ -3,14 +3,14 @@
  */
 const path = require('path');
 const webpack = require('webpack');
-const {merge} = require('webpack-merge');
+const { merge } = require('webpack-merge');
 
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-const APP_DIR = path.resolve(__dirname, './../src/index.js');
+const APP_DIR = path.resolve(__dirname, './../src/index.jsx');
 
-module.exports = env =>
+module.exports = (env) =>
   merge([
     {
       entry: ['@babel/polyfill', APP_DIR],
@@ -46,8 +46,8 @@ module.exports = env =>
             exclude: /node_modules/,
             loader: 'url-loader',
             options: {
-              publicPath: './fonts/',
-              name: '../src/webFonts/[name].[ext]'
+              // publicPath: './fonts/'
+              // name: '../src/webFonts/[name].[ext]'
               // limit: 1000
             }
           },
