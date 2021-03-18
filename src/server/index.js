@@ -47,7 +47,7 @@ app.post('/',(req, res, next) => {
 
   const file = req.files;
   console.log('file', file);
-  
+
 
     const textArray = doc.split('/\r?\n/');
     // const wordCountTable = new Map();
@@ -64,8 +64,8 @@ app.post('/',(req, res, next) => {
     //     });
     // })
     // // set the the count table
-    res.send({data:"wordCountTable"});
-    next();
+    res.send({data:[{word:"wordCountTable", count: 3}]});
+    // next();
   },
   // GroupedActivityController.loadData
 );

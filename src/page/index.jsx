@@ -65,7 +65,7 @@ const UrlForm = ({ props }) => {
     const newObj = { 'word': 'a', 'count': 2 };
     urls.push(newObj);
     console.log('urls', urls);
-    urlRequest("http://localhost:3000/", "file");
+    urlRequest("http://localhost:3000", "file");
     
     // return urls;
 
@@ -74,18 +74,15 @@ const UrlForm = ({ props }) => {
   const urlRequest = (url, file) => {
     const options = {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        // 'Accept': 'application/json'
-      },
-      body: file
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({file})
     }
 
     fetch(url, options)
     .then((response) => response.json())
     .then((json) =>{ 
-      submitForm(json)
       console.log("json", json); 
+      submitForm(json.data)
       return json
     });
   }
