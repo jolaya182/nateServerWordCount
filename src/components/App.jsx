@@ -13,14 +13,14 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Route, Switch, HashRouter as Router } from 'react-router-dom';
 import ErrorBoundary from './UtilComponents/ErrorBoundary';
-import { Whoops404, myUtilComponent } from '../page';
+import { Whoops404, myUtilComponent, Form } from '../page';
 import pages from '../css/index.scss';
 
 const App = () => (
   <ErrorBoundary>
     <Router>
       <Switch>
-        <Route path="/" exact component={myUtilComponent} />
+        <Route path="/" exact component={Form} />
         <Route component={Whoops404} />
       </Switch>
     </Router>

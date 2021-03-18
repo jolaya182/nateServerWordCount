@@ -19,12 +19,7 @@
     "lintFix": "eslint --debug src/. --fix",
     "prettycheck": "prettier  --check src/components/App.jsx",
     "pretty": "prettier src/** --write --only-changed ",
-    "prettystage": "pretty-quick --staged",
-    "husky": {
-      "hooks": {
-        "pre-commit": "pretty-quick --staged"
-      }
-    }
+    "prettystage": "pretty-quick --staged"
   },
   "repository": {
     "type": "git",
