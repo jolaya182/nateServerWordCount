@@ -10,7 +10,7 @@
  */
 // main page component create the 404 page and the all other
 // pages as exported components
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import MainMenu from './MainMenu';
 import Agenda from '../components/Agenda/Agenda';
 
@@ -52,51 +52,53 @@ export const myUtilComponent = () => (
 
 export const articleHtml = () => <SomeArticle />;
 
-const UrlForm = ({ props }) => {
-  const [urls, submitForm] = useState([])
-
-  const submit = (e) => {
-    // make the post request
-    e.preventDefault();
-    console.log("e", e);
-    //some new obj
-    // const
-    const urls = [];
-    const newObj = { 'word': 'a', 'count': 2 };
-    urls.push(newObj);
-    console.log('urls', urls);
-    urlRequest("http://localhost:3000", "file");
-    
-    // return urls;
-
-  }
+const UrlForm = () => {
+  const [urls, submitForm] = useState([]);
+  const urlString = useRef('');
+  const textfile = useRef(true);
 
   const urlRequest = (url, file) => {
     const options = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({file})
-    }
+      body: JSON.stringify({ file })
+    };
 
     fetch(url, options)
-    .then((response) => response.json())
-    .then((json) =>{ 
-      console.log("json", json); 
-      submitForm(json.data)
-      return json
-    });
-  }
+      .then((response) => response.json())
+      .then((json) => {
+        console.log('json', json);
+        submitForm(json.data);
+        return json;
+      });
+  };
+  const submit = (e) => {
+    // make the post request
+    e.preventDefault();
+    console.log('e', e);
+    // some new obj
+    // const
+    // const urls = [];
+    const newObj = { word: 'a', count: 2 };
+    urls.push(newObj);
+    console.log('urls', urls);
+    urlRequest(`http://localhost:3000${urlString}`, textfile);
 
-  return (<div>
-    <form>
-      <input type='text' placeholder='type your url '></input>
-      <input type='file'></input>
-      <button onClick={submit}>submit</button>
-      <section>
-        {urls.map((url) => url.word + " " + url.count)}
-      </section>
-    </form>
-  </div>)
-}
+    // return urls;
+  };
 
-export const Form = () => <UrlForm />
+  return (
+    <div>
+      <form>
+        <input type="text" placeholder="type your url " ref={urlString} />
+        <input type="file" ref={textfile} />
+        <button type="button" onClick={submit}>
+          submit
+        </button>
+        <section>{urls.map((url) => `${url.word} ${url.count}`)}</section>
+      </form>
+    </div>
+  );
+};
+
+export const Form = () => <UrlForm />;
