@@ -57,11 +57,12 @@ const UrlForm = () => {
   const urlString = useRef('');
   const textfile = useRef(true);
 
-  const urlRequest = (url, file) => {
+  const urlRequest = (url, file, stringy) => {
+    console.log("stringy", stringy);
     const options = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ file })
+      body: JSON.stringify( {google: 'goods'} )
     };
 
     fetch(url, options)
@@ -81,8 +82,10 @@ const UrlForm = () => {
     // const urls = [];
     const newObj = { word: 'a', count: 2 };
     urls.push(newObj);
-    console.log('urls', urls);
-    urlRequest(`http://localhost:3000${urlString}`, textfile);
+    console.log('urlString.current', urlString.current.value  ); //
+    console.log('textfile.current', urlString.current.files  ); //textfile
+
+    urlRequest(`http://localhost:3000`, "file", urlString.current.value);
 
     // return urls;
   };
@@ -90,8 +93,8 @@ const UrlForm = () => {
   return (
     <div>
       <form>
-        <input type="text" placeholder="type your url " ref={urlString} />
-        <input type="file" ref={textfile} />
+        <input type="text" placeholder="type your url " ref={urlString} label={'nateurl'} name={"nateurl"} />
+        <input type="file" ref={textfile} label="natefile"/>
         <button type="button" onClick={submit}>
           submit
         </button>
