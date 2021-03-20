@@ -2,11 +2,11 @@
 /**
  * title: index.jsx
  *
- * date: 3/2/2020
+ * date: 3/20/2020
  *
  * author: javier olaya
  *
- * description: this component handles all the pages to render on the webpage
+ * description: this component handles the form that collects the url and a text for a word count
  */
 // main page component create the 404 page and the all other
 // pages as exported components
@@ -54,15 +54,16 @@ export const articleHtml = () => <SomeArticle />;
 
 const UrlForm = () => {
   const [urls, submitForm] = useState([]);
-  const urlString = useRef('');
-  const textfile = useRef(true);
+  const urlText = useRef(null);
+  const textfile = useRef(null);
 
-  const urlRequest = (url, file, stringy) => {
-    console.log("stringy", stringy);
+  const urlRequest = (url, fort) => {
+    // const form = Array.from(fort.entries());
+    // console.log('form', form);
     const options = {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify( {google: 'goods'} )
+      // headers: { 'Content-Type': 'multipart/form-data' },
+      body: fort
     };
 
     fetch(url, options)
@@ -76,25 +77,27 @@ const UrlForm = () => {
   const submit = (e) => {
     // make the post request
     e.preventDefault();
-    console.log('e', e);
-    // some new obj
-    // const
-    // const urls = [];
-    const newObj = { word: 'a', count: 2 };
-    urls.push(newObj);
-    console.log('urlString.current', urlString.current.value  ); //
-    console.log('textfile.current', urlString.current.files  ); //textfile
-
-    urlRequest(`http://localhost:3000`, "file", urlString.current.value);
-
-    // return urls;
+    // console.log('urlString.current', urlString.current.value);
+    // console.log('textfile.current', textfile.current.files);
+    const form = new FormData();
+    const input = textfile.current.files[0];
+    const url = urlText.current.value;
+    form.append('file', input); // textfile
+    form.append('urlText', url);
+    urlRequest(`http://localhost:3000`, form);
   };
 
   return (
     <div>
-      <form>
-        <input type="text" placeholder="type your url " ref={urlString} label={'nateurl'} name={"nateurl"} />
-        <input type="file" ref={textfile} label="natefile"/>
+      <form id="nateForm" encType="multipart/form-data">
+        <input type="text" placeholder="type your url" ref={urlText} />
+        <input
+          type="file"
+          accept=".txt,.text,"
+          ref={textfile}
+          name="file"
+          id="avatar"
+        />
         <button type="button" onClick={submit}>
           submit
         </button>
