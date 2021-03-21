@@ -11,7 +11,6 @@
 // main page component create the 404 page and the all other
 // pages as exported components
 import React, { useState, useRef } from 'react';
-import { string } from 'prop-types';
 import MainMenu from './MainMenu';
 import Agenda from '../components/Agenda/Agenda';
 
@@ -19,6 +18,8 @@ import Agenda from '../components/Agenda/Agenda';
 import SomeArticle from '../components/UtilComponents/SomeArticle';
 import MiddleBody from './MiddleBody';
 import Footer from './Footer';
+
+const serverUrl = `http://localhost:3000`;
 
 export const Whoops404 = ({ location }) => (
   <div className="whoops404">
@@ -61,20 +62,21 @@ const UrlForm = () => {
   const [loading, updateLoadMessage] = useState(false);
   // const textfile = useRef(null);
 
-  const urlRequest = (url, fort) => {
+  const urlRequest = (form) => {
     // const form = Array.from(fort.entries());
     // console.log('form', form);
     const options = {
       method: 'POST',
       // headers: { 'Content-Type': 'application/json' },
-      body: fort
+      body: form
     };
 
-    fetch(url, options)
+    fetch(serverUrl, options)
       .then((response) => response.json())
       .then((json) => {
         console.log('json', json);
         submitForm(json.data);
+        console.log('(json.historyUrl', json.historyUrl);
         updateHistory(json.historyUrl);
         updateLoadMessage(false);
         return json;
@@ -88,43 +90,31 @@ const UrlForm = () => {
     const form = new FormData();
     // const input = textfile.current.files[0];
     const url = urlText.current.value;
+    const selectedUrl = currentSelectedUrl;
     // form.append('file', input); // textfile
     let urlString = null;
     if (url || url.length > 0) {
       urlString = url;
-      // alert('please type in a url ');
     }
-    console.log('url', urlString.length);
+    console.log('urlText', urlString.length);
     form.append('urlText', urlString);
+    form.append('selectedUrl', selectedUrl);
     updateLoadMessage(true);
-    urlRequest(`http://localhost:3000`, form);
-  };
-
-  const selectUrlRequest = (url, urlSeletected) => {
-    const options = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ urlText: urlSeletected })
-    };
-
-    fetch(url, options)
-      .then((response) => response.json())
-      .then((json) => {
-        console.log('json', json);
-        submitForm(json.data);
-        updateHistory(json.historyUrl);
-        updateLoadMessage(false);
-        console.log('done fetching');
-        return json;
-      });
+    urlRequest(form);
   };
 
   const onChangeSelect = (e) => {
     e.preventDefault();
-    console.log('selected', e.target.value);
-    setSelectedUrl(e.target.value);
+    const selectedValue = e.target.value;
+    const urlString = urlText.current.value;
+    const selectedUrl = currentSelectedUrl;
+    const form = new FormData();
+    form.append('urlText', urlString);
+    form.append('selectedUrl', selectedUrl);
+    console.log('selected', selectedValue);
+    setSelectedUrl(selectedValue);
     updateLoadMessage(true);
-    selectUrlRequest(`http://localhost:3000`, e.target.value);
+    urlRequest(form);
   };
 
   // function that avoids triggering other functions to quickly
@@ -147,19 +137,16 @@ const UrlForm = () => {
     <div>
       <form id="nateForm" encType="multipart/form-data">
         <input type="text" placeholder="type your url" ref={urlText} />
-        {/* <input
-          type="file"
-          accept=".txt,.text,"
-          ref={textfile}
-          name="file"
-          id="avatar"
-        /> */}
         <button type="button" onClick={submit}>
           submit
         </button>
-        <select value={currentSelectedUrl} onChange={onChangeSelect}>
+        <select
+          // ref={selectedOption}
+          value={currentSelectedUrl}
+          onChange={onChangeSelect}
+        >
           {historyUrl.map((url, index) => (
-            <option value={url} key={`nate-select-s${index}`}>
+            <option value={url} key={`nate-select-${index}`}>
               {url}
             </option>
           ))}
