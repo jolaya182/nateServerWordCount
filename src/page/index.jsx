@@ -11,6 +11,7 @@
 // main page component create the 404 page and the all other
 // pages as exported components
 import React, { useState, useRef } from 'react';
+import { string } from 'prop-types';
 import MainMenu from './MainMenu';
 import Agenda from '../components/Agenda/Agenda';
 
@@ -53,17 +54,20 @@ export const myUtilComponent = () => (
 export const articleHtml = () => <SomeArticle />;
 
 const UrlForm = () => {
-  const [urls, submitForm] = useState([]);
+  const [words, submitForm] = useState([]);
+  const [historyUrl, updateHistory] = useState([]);
+  const [currentSelectedUrl, setSelectedUrl] = useState('');
   const urlText = useRef(null);
+  const [loading, updateLoadMessage] = useState(false);
   // const textfile = useRef(null);
 
   const urlRequest = (url, fort) => {
     // const form = Array.from(fort.entries());
     // console.log('form', form);
     const options = {
-      method: 'GET',
+      method: 'POST',
       // headers: { 'Content-Type': 'application/json' },
-      data: fort
+      body: fort
     };
 
     fetch(url, options)
@@ -71,6 +75,8 @@ const UrlForm = () => {
       .then((json) => {
         console.log('json', json);
         submitForm(json.data);
+        updateHistory(json.historyUrl);
+        updateLoadMessage(false);
         return json;
       });
   };
@@ -83,9 +89,59 @@ const UrlForm = () => {
     // const input = textfile.current.files[0];
     const url = urlText.current.value;
     // form.append('file', input); // textfile
-    form.append('urlText', url);
+    let urlString = null;
+    if (url || url.length > 0) {
+      urlString = url;
+      // alert('please type in a url ');
+    }
+    console.log('url', urlString.length);
+    form.append('urlText', urlString);
+    updateLoadMessage(true);
     urlRequest(`http://localhost:3000`, form);
   };
+
+  const selectUrlRequest = (url, urlSeletected) => {
+    const options = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ urlText: urlSeletected })
+    };
+
+    fetch(url, options)
+      .then((response) => response.json())
+      .then((json) => {
+        console.log('json', json);
+        submitForm(json.data);
+        updateHistory(json.historyUrl);
+        updateLoadMessage(false);
+        console.log('done fetching');
+        return json;
+      });
+  };
+
+  const onChangeSelect = (e) => {
+    e.preventDefault();
+    console.log('selected', e.target.value);
+    setSelectedUrl(e.target.value);
+    updateLoadMessage(true);
+    selectUrlRequest(`http://localhost:3000`, e.target.value);
+  };
+
+  // function that avoids triggering other functions to quickly
+  const debounce = (func, delay) => {
+    let timeout;
+    return function funExecuted(...args) {
+      const later = () => {
+        timeout = null;
+        func(...args);
+      };
+      // reset the clock after every click
+      clearTimeout(timeout);
+      timeout = setTimeout(later, delay);
+    };
+  };
+  debounce(submit, 1200);
+  // debounce(onChangeSelect, 1200);
 
   return (
     <div>
@@ -101,8 +157,27 @@ const UrlForm = () => {
         <button type="button" onClick={submit}>
           submit
         </button>
-        <section>{urls.map((url) => `${url.word} ${url.count}`)}</section>
+        <select value={currentSelectedUrl} onChange={onChangeSelect}>
+          {historyUrl.map((url, index) => (
+            <option value={url} key={`nate-select-s${index}`}>
+              {url}
+            </option>
+          ))}
+        </select>
       </form>
+      {loading ? (
+        `loading...`
+      ) : (
+        <section>
+          {words.map((word, index) => {
+            return (
+              <div key={`nate-words${index}`}>
+                <div>{`${word.word}: ${word.count}`}</div>
+              </div>
+            );
+          })}
+        </section>
+      )}
     </div>
   );
 };
