@@ -19,7 +19,11 @@ const multer = require('multer');
 const port = 3000;
 // file structure
 const fs = require('fs');
+// find directory
 const path = require('path');
+//
+const http = require('http');
+
 // create the multer for file and text form elements
 const storage = multer.memoryStorage();
 
@@ -56,7 +60,8 @@ app.use((req, res, next) => {
  * @param {*} { req, res, next}
  * @returns
  */
-app.post('/', upload.single('file'), (req, res, next) => {
+app.post('/:', upload.single('file'), (req, res, next) => {
+  console.log('req.url', req.url);
   const clientFile = req.file;
   const clientUrl = req.body.urlText;
   if (!clientFile) {
@@ -99,5 +104,79 @@ app.post('/', upload.single('file'), (req, res, next) => {
 
   res.status(200).send({ data: wordCountTableArray });
 });
+
+app.get('/', upload.single('file'), (req, res, next) => {
+  // todo account for https require https, check string for https
+  console.log('req.body', req.body.urlText);
+  const clientUrl = req.body;
+  if (!clientUrl) {
+    const error = new Error('please type a url with a txt ');
+    error.httpStatusCode = 400;
+    return next(error);
+  }
+  // const option ={
+
+  // }
+
+  // const request = http.request(options, res=>{
+  //   res.on('data', d=>{
+  //     console.log("return data is : ", d);
+  //   })
+  // })
+
+  http
+    .get('http://norvig.com/big.txt', (resp) => {
+      let data = '';
+
+      resp.on('data', (chunk) => {
+        data += chunk;
+        console.log('http success');
+
+        const multerText = data;
+        const textArray = multerText.split(/[\r\n]+/g);
+        // console.log('textArray', textArray);
+        const wordCountTable = new Map();
+        textArray.forEach((row) => {
+          // console.log('row', row);
+          const words = row.trim().split(/[^A-Za-z0-9']/g);
+          // console.log('words', words);
+
+          words.forEach((word) => {
+            if (wordCountTable.has(word)) {
+              wordCountTable.set(word, wordCountTable.get(word) + 1);
+              return;
+            }
+            wordCountTable.set(word, 1);
+          });
+        });
+        // set the the count table
+        const wordCountTableArray = [];
+        wordCountTable.forEach((word, count) => {
+          wordCountTableArray.push({ word, count });
+        });
+
+        const directory = {
+          documentWordCount: wordCountTableArray.length
+        };
+        urlListJson[clientUrl] = directory;
+        urlListJson['http://norvig.com/big.txt'] = directory;
+        fs.writeFileSync(urlListPath, JSON.stringify(urlListJson), (err) => {
+          if (err) console.log('error at writing time');
+          console.log('congrats written');
+        });
+
+        res.status(200).send({ data: wordCountTableArray });
+        // res.status(200).send({ data: wordCountTableArray });
+      });
+
+      resp.on('end', () => {
+        console.log('http success');
+        console.log(JSON.parse(data));
+      });
+    })
+    .on('error', (err) => {
+      console.log('Error:', err.message);
+    });
+}); // end of the get route
 
 app.listen(port, () => console.log('listening to port:', port));

@@ -55,15 +55,15 @@ export const articleHtml = () => <SomeArticle />;
 const UrlForm = () => {
   const [urls, submitForm] = useState([]);
   const urlText = useRef(null);
-  const textfile = useRef(null);
+  // const textfile = useRef(null);
 
   const urlRequest = (url, fort) => {
     // const form = Array.from(fort.entries());
     // console.log('form', form);
     const options = {
-      method: 'POST',
-      // headers: { 'Content-Type': 'multipart/form-data' },
-      body: fort
+      method: 'GET',
+      // headers: { 'Content-Type': 'application/json' },
+      data: fort
     };
 
     fetch(url, options)
@@ -80,9 +80,9 @@ const UrlForm = () => {
     // console.log('urlString.current', urlString.current.value);
     // console.log('textfile.current', textfile.current.files);
     const form = new FormData();
-    const input = textfile.current.files[0];
+    // const input = textfile.current.files[0];
     const url = urlText.current.value;
-    form.append('file', input); // textfile
+    // form.append('file', input); // textfile
     form.append('urlText', url);
     urlRequest(`http://localhost:3000`, form);
   };
@@ -91,13 +91,13 @@ const UrlForm = () => {
     <div>
       <form id="nateForm" encType="multipart/form-data">
         <input type="text" placeholder="type your url" ref={urlText} />
-        <input
+        {/* <input
           type="file"
           accept=".txt,.text,"
           ref={textfile}
           name="file"
           id="avatar"
-        />
+        /> */}
         <button type="button" onClick={submit}>
           submit
         </button>
