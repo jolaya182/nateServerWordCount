@@ -4,7 +4,7 @@
 /**
  * Production webpack config.
  */
-const {merge} = require('webpack-merge');
+const { merge } = require('webpack-merge');
 
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
@@ -49,8 +49,8 @@ const prodConfiguration = () =>
       },
       plugins: [
         new HtmlWebpackPlugin({
-          template: './src/index.html',
-          filename: './index.html',
+          template: './src/mainIndex.html',
+          filename: './[name].html',
           inject: true,
           minify: {
             collapseWhitespace: true,
@@ -63,10 +63,10 @@ const prodConfiguration = () =>
           }
         }),
         new MiniCssExtractPlugin(),
-        new OptimizeCssAssetsPlugin(),
+        new OptimizeCssAssetsPlugin()
         // new Visualizer({ filename: './statistics.html' })
       ]
     }
   ]);
 
-module.exports = env => merge(baseConfig(env), prodConfiguration(env));
+module.exports = (env) => merge(baseConfig(env), prodConfiguration(env));
