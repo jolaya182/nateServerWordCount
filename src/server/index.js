@@ -41,6 +41,7 @@ const fileFilter = (req, file, next) => {
     next(null, false);
   }
 };
+
 const upload = multer({ fileFilter, storage });
 const urlListPath = path.join(__dirname, 'urlList.json');
 const urlListJson = JSON.parse(fs.readFileSync(urlListPath, 'UTF-8'));
@@ -61,7 +62,7 @@ app.use((req, res, next) => {
 });
 
 /**
- *respond to post, incoming data is the star time and end time of the agenda application
+ *respond to post, incoming data url from the client application
  *
  * @param {*} { req, res, next}
  * @returns
@@ -69,31 +70,48 @@ app.use((req, res, next) => {
 app.post('/', upload.single('file'), (req, res, next) => {
   console.log('req.body', req.body);
   const clientUrl = req.body.selectedUrl;
-  const { urlText } = req.body;
-  console.log('clientUrl', clientUrl); //
+  const { urlText, fetchUrls } = req.body;
+  console.log('urlText', urlText); //
 
-  if (!urlText) {
+  if (fetchUrls === 'true') {
+    res.status(200).send({
+      data: [],
+      historyUrl: Object.keys(urlListJson),
+      currentSelectedUrl: ''
+    });
+    return next();
+  }
+
+  // if the string exists then return those words
+  if (urlListJson[clientUrl]) {
+    console.log('clienturl found', clientUrl);
+    res.status(200).send({
+      data: urlListJson[clientUrl].wordCountTableArray,
+      historyUrl: Object.keys(urlListJson),
+      currentSelectedUrl: clientUrl
+    });
+    return next();
+  }
+
+  // if not that then process the text
+  // check if the client typed in the url
+  if (urlText === 'null') {
+    console.log('null', urlText);
     const error = new Error('please type in a url ');
     error.httpStatusCode = 400;
     return next(error);
   }
 
-  // if the string exists then return those words
-  if (urlListJson[clientUrl]) {
-    // documentWordCount":48592,"wordCountTableArray
-    console.log('clienturl found', clientUrl);
-    res.status(200).send({
-      data: urlListJson[clientUrl].wordCountTableArray,
-      historyUrl: Object.keys(urlListJson)
-    });
-    return next();
-  }
-  // if not that then process the text
-
   // .send({ data: [{ string: 5 }] })
   superagent.get(urlText).end((err, resy) => {
     // console.log('res', res);
-
+    // if not that then process the text
+    if (err) {
+      const error = new Error('please type in a correct url ');
+      error.httpStatusCode = 400;
+      // res.status(400).send(error);
+      return next(error);
+    }
     const multerText = JSON.stringify(resy.text);
     const textArray = multerText.split(/[\r\n]+/g);
     // console.log('textArray', textArray);
@@ -123,16 +141,18 @@ app.post('/', upload.single('file'), (req, res, next) => {
       documentWordCount: wordCountTableArray.length,
       wordCountTableArray
     };
-    urlListJson[clientUrl] = directory;
+    urlListJson[urlText] = directory;
     fs.writeFileSync(urlListPath, JSON.stringify(urlListJson), (eror) => {
       if (eror) console.log('error at writing time');
       console.log('congrats written');
     });
-    console.log('Object.keys(urlListJson)', Object.keys(urlListJson));
+    // console.log('Object.keys(urlListJson)', Object.keys(urlListJson));
     res.status(200).send({
       data: wordCountTableArray,
-      historyUrl: Object.keys(urlListJson)
+      historyUrl: Object.keys(urlListJson),
+      currentSelectedUrl: urlText
     });
   });
 });
+
 app.listen(port, () => console.log('listening to port:', port));

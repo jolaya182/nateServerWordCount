@@ -19,7 +19,7 @@ import React from 'react';
  * @param {object} incomingObject
  * @returns
  */
-export const serializer = incomingObject => {
+export const serializer = (incomingObject) => {
   return JSON.stringify(incomingObject);
 };
 
@@ -29,7 +29,7 @@ export const serializer = incomingObject => {
  * @param {string} incomingString
  * @returns
  */
-export const deserializer = incomingString => {
+export const deserializer = (incomingString) => {
   return JSON.parse(incomingString);
 };
 /**
@@ -38,7 +38,7 @@ export const deserializer = incomingString => {
  * @param {object} dataFromConstantFile
  * @param {Function} thisState
  */
-export const ServerRequestFailureMitigationPlan = dataFromConstantFile => {
+export const ServerRequestFailureMitigationPlan = (dataFromConstantFile) => {
   console.log('Server Request Failure Mitigation Plan executing');
   return deserializer(dataFromConstantFile);
 };
@@ -87,10 +87,10 @@ export const fetchExecuteCallbackFunction = (
 
   return fetch(url, options)
     .then(
-      response => {
+      (response) => {
         return response.json();
       },
-      error => {
+      (error) => {
         this.printConsoleErrorMessage(
           'fetch failed due to error, check if server is running',
           error
@@ -98,7 +98,7 @@ export const fetchExecuteCallbackFunction = (
       }
     )
     .then(
-      json => {
+      (json) => {
         const { status } = json;
         if (status >= 400 && status < 500) {
           printConsoleErrorMessage('failed on the client side due to ', status);
@@ -110,13 +110,13 @@ export const fetchExecuteCallbackFunction = (
         // return json;
         return callBackFunction(json);
       },
-      error =>
+      (error) =>
         printConsoleErrorMessage(
           'error sending the request, check the url address',
           error
         )
     )
-    .catch(error => {
+    .catch((error) => {
       console.log('error message caught', error.message);
       // return error;
     });
@@ -128,7 +128,7 @@ export const fetchExecuteCallbackFunction = (
  * @param {array} icomingArray
  * @returns array
  */
-const sortArrayKeys = icomingArray => {
+const sortArrayKeys = (icomingArray) => {
   return icomingArray.sort((a, b) => a + b);
 };
 
@@ -151,7 +151,7 @@ export const areFetchRequestResponsePropertyNamesValid = (state, response) => {
     }
     const stateKeys = sortArrayKeys(Object.keys(state));
     // go through every key
-    stateKeys.forEach(stateKey => {
+    stateKeys.forEach((stateKey) => {
       // case 2
       // if the value of a key is an object then recurse
       if (
