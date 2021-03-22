@@ -68,10 +68,8 @@ app.use((req, res, next) => {
  * @returns
  */
 app.post('/', upload.single('file'), (req, res, next) => {
-  console.log('req.body', req.body);
   const clientUrl = req.body.selectedUrl;
   const { urlText, fetchUrls } = req.body;
-  console.log('urlText', urlText); //
 
   if (fetchUrls === 'true') {
     res.status(200).send({
@@ -84,7 +82,6 @@ app.post('/', upload.single('file'), (req, res, next) => {
 
   // if the string exists then return those words
   if (urlListJson[clientUrl]) {
-    console.log('clienturl found', clientUrl);
     res.status(200).send({
       data: urlListJson[clientUrl].wordCountTableArray,
       historyUrl: Object.keys(urlListJson),
@@ -93,35 +90,29 @@ app.post('/', upload.single('file'), (req, res, next) => {
     return next();
   }
 
-  // if not that then process the text
   // check if the client typed in the url
   if (urlText === 'null') {
-    console.log('null', urlText);
     const error = new Error('please type in a url ');
     error.httpStatusCode = 400;
     return next(error);
   }
 
-  // .send({ data: [{ string: 5 }] })
   superagent.get(urlText).end((err, resy) => {
-    // console.log('res', res);
-    // if not that then process the text
+    // check if the url was legit
     if (err) {
       const error = new Error('please type in a correct url ');
       error.httpStatusCode = 400;
-      // res.status(400).send(error);
       return next(error);
     }
+    // process the text
+
     const multerText = JSON.stringify(resy.text);
     const textArray = multerText.split(/[\r\n]+/g);
-    // console.log('textArray', textArray);
     const wordCountTable = new Map();
     let lowerC = '';
-    textArray.forEach((row) => {
-      // console.log('row', row);
-      const words = row.trim().split(/[^A-Za-z']/g);
-      // console.log('words', words);
 
+    textArray.forEach((row) => {
+      const words = row.trim().split(/[^A-Za-z']/g);
       words.forEach((word) => {
         lowerC = word.toLowerCase();
         if (wordCountTable.has(lowerC)) {
@@ -131,7 +122,8 @@ app.post('/', upload.single('file'), (req, res, next) => {
         wordCountTable.set(lowerC, 1);
       });
     });
-    // set the the count table
+
+    // set the the count table in an array
     const wordCountTableArray = [];
     wordCountTable.forEach((count, word) => {
       wordCountTableArray.push({ word, count });
@@ -141,12 +133,13 @@ app.post('/', upload.single('file'), (req, res, next) => {
       documentWordCount: wordCountTableArray.length,
       wordCountTableArray
     };
+
     urlListJson[urlText] = directory;
+
     fs.writeFileSync(urlListPath, JSON.stringify(urlListJson), (eror) => {
       if (eror) console.log('error at writing time');
       console.log('congrats written');
     });
-    // console.log('Object.keys(urlListJson)', Object.keys(urlListJson));
     res.status(200).send({
       data: wordCountTableArray,
       historyUrl: Object.keys(urlListJson),

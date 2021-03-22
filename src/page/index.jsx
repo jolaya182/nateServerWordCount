@@ -11,7 +11,7 @@
 // main page component create the 404 page and the all other
 // pages as exported components
 import React from 'react';
-import UrlForm from '../components/UrlForm.jsx';
+import UrlForm from '../components/UrlForm';
 
 export const Whoops404 = ({ location }) => (
   <div className="whoops404">

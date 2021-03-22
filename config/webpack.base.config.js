@@ -65,7 +65,7 @@ module.exports = (env) =>
       plugins: [
         new HtmlWebpackPlugin({
           template: './src/index.html',
-          filename: './index.html',
+          filename: './[name].html',
           favicon: './src/pictures/jLogo.ico'
         }),
         new webpack.DefinePlugin({

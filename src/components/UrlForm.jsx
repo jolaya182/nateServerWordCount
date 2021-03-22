@@ -94,7 +94,6 @@ const UrlForm = () => {
     const form = new FormData();
     form.append('fetchUrls', true);
     urlRequest(form);
-    return () => {};
   }, []);
 
   return (
