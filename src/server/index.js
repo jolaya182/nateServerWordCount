@@ -21,28 +21,12 @@ const port = 3000;
 const fs = require('fs');
 // find directory
 const path = require('path');
-//
-// const http = require('http');
-
-// const request = require('request');
-
-// const got = require('got');
-
 const superagent = require('superagent');
 
 // create the multer for file and text form elements
 const storage = multer.memoryStorage();
 
-//
-const fileFilter = (req, file, next) => {
-  if (file.mimetype === 'text/plain') {
-    next(null, true);
-  } else {
-    next(null, false);
-  }
-};
-
-const upload = multer({ fileFilter, storage });
+const upload = multer({ storage });
 const urlListPath = path.join(__dirname, 'urlList.json');
 const urlListJson = JSON.parse(fs.readFileSync(urlListPath, 'UTF-8'));
 
@@ -62,7 +46,7 @@ app.use((req, res, next) => {
 });
 
 /**
- *respond to post, incoming data url from the client application
+ * respond to post, incoming data url from the client application
  *
  * @param {*} { req, res, next}
  * @returns
@@ -71,6 +55,7 @@ app.post('/', upload.single('file'), (req, res, next) => {
   const clientUrl = req.body.selectedUrl;
   const { urlText, fetchUrls } = req.body;
 
+  // return the initial history of url if it exists
   if (fetchUrls === 'true') {
     res.status(200).send({
       data: [],
@@ -97,6 +82,7 @@ app.post('/', upload.single('file'), (req, res, next) => {
     return next(error);
   }
 
+  //  use superagent to make a file request and read the txt file
   superagent.get(urlText).end((err, resy) => {
     // check if the url was legit
     if (err) {
@@ -104,13 +90,14 @@ app.post('/', upload.single('file'), (req, res, next) => {
       error.httpStatusCode = 400;
       return next(error);
     }
-    // process the text
 
+    // process the text
     const multerText = JSON.stringify(resy.text);
     const textArray = multerText.split(/[\r\n]+/g);
     const wordCountTable = new Map();
     let lowerC = '';
 
+    // separate the words and count them
     textArray.forEach((row) => {
       const words = row.trim().split(/[^A-Za-z']/g);
       words.forEach((word) => {
@@ -129,13 +116,14 @@ app.post('/', upload.single('file'), (req, res, next) => {
       wordCountTableArray.push({ word, count });
     });
 
+    // structure the object for hash table like lookup search.
     const directory = {
       documentWordCount: wordCountTableArray.length,
       wordCountTableArray
     };
 
+    // write the file
     urlListJson[urlText] = directory;
-
     fs.writeFileSync(urlListPath, JSON.stringify(urlListJson), (eror) => {
       if (eror) console.log('error at writing time');
       console.log('congrats written');

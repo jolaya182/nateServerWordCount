@@ -1,7 +1,23 @@
+/* eslint-disable consistent-return */
+/**
+ * title: index.js
+ *
+ * date: 3/22/2020
+ *
+ * author: javier olaya
+ *
+ * description: this file handles all the form submission and words rendering
+ */
 import React, { useState, useRef, useEffect } from 'react';
 
 import serverUrl from './utilComponentData/constants';
 
+/**
+ *  form component used to get a word count from the url the
+ *  user's url submission
+ *
+ * @return {Html element}
+ */
 const UrlForm = () => {
   const [words, upatedWords] = useState([]);
   const [historyUrl, updateHistory] = useState([]);
@@ -10,6 +26,11 @@ const UrlForm = () => {
   const [loadingMessage, updateLoadMessage] = useState(false);
   const urlText = useRef(null);
 
+  /**
+   *  does a post request with a formdata object
+   *
+   * @param {*} form
+   */
   const urlRequest = (form) => {
     const options = {
       method: 'POST',
@@ -46,6 +67,12 @@ const UrlForm = () => {
         // return error;
       });
   };
+
+  /**
+   *  submits a url search from the input form
+   *
+   * @param {*} e
+   */
   const submit = (e) => {
     // make the post request
     e.preventDefault();
@@ -63,6 +90,12 @@ const UrlForm = () => {
     urlRequest(form);
   };
 
+  /**
+   *  updates  the message and the fetches the word count
+   *  based on the url selected
+   *
+   * @param {*} e
+   */
   const onChangeSelect = (e) => {
     e.preventDefault();
     const selectedValue = e.target.value;
@@ -73,7 +106,13 @@ const UrlForm = () => {
     urlRequest(form);
   };
 
-  // function that avoids triggering other functions to quickly
+  /**
+   *function that avoids triggering other functions to quickly
+   *
+   * @param {*} func
+   * @param {*} delay
+   * @return {*}
+   */
   const debounce = (func, delay) => {
     let timeout;
     return function funExecuted(...args) {
@@ -86,9 +125,16 @@ const UrlForm = () => {
       timeout = setTimeout(later, delay);
     };
   };
-  debounce(submit, 1200);
-  // debounce(onChangeSelect, 1200);
 
+  // helps prevent the user requesting multiple
+  // click before receiving the servers data
+  debounce(submit, 1200);
+
+  /**
+   *  retrieve the initial data that may be stored on the server
+   *
+   * @return {*}
+   */
   useEffect(() => {
     // delete initial data
     const form = new FormData();
