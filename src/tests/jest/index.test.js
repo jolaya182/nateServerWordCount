@@ -6,14 +6,14 @@
 import 'regenerator-runtime/runtime';
 
 const supertest = require('supertest');
-const server = require('../../server/server');
+const { server, outdoorsysequence, norvig } = require('../../server/server');
 
 const request = supertest(server);
 describe('Post /', () => {
   test('process word count of 10 a txt file from a webpage', (done) => {
     async function processTxtWordCount10(data) {
       try {
-        const urlText = 'http://www.outdoorsysequence.com/bla.txt';
+        const urlText = outdoorsysequence;
         const documentWordCount = 10;
         const response = await request
           .post('/')
@@ -32,7 +32,7 @@ describe('Post /', () => {
   test('process word count of 41569 a txt file from a webpage', (done) => {
     async function processTxtWordCount41569(data) {
       try {
-        const urlText = 'https://norvig.com/big.txt';
+        const urlText = norvig;
         const documentWordCount = 41569;
         const response = await request
           .post('/')

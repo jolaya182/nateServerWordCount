@@ -9,8 +9,16 @@
  * description: this file handles all the form submission and words rendering
  */
 import React, { useState, useRef, useEffect } from 'react';
+import 'bootstrap/dist/css/bootstrap.css';
+import Form from 'react-bootstrap/Form';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import Button from 'react-bootstrap/Button';
+import Pagination from 'react-bootstrap/Pagination';
 
+import { ListGroup } from 'react-bootstrap';
 import serverUrl from './utilComponentData/constants';
+import '../css/index.css';
 
 /**
  *  form component used to get a word count from the url the
@@ -143,34 +151,82 @@ const UrlForm = () => {
   }, []);
 
   return (
-    <div>
-      <form id="nateForm" encType="multipart/form-data">
-        <input type="text" placeholder="type your url" ref={urlText} />
-        <button type="button" onClick={submit}>
-          submit
-        </button>
-        <select value={currentSelectedUrl} onChange={onChangeSelect}>
-          {historyUrl.map((url, index) => (
-            <option value={url} key={`nate-select-${index}`}>
-              {url}
-            </option>
-          ))}
-        </select>
-      </form>
-      <div>{errorMessage}</div>
+    <div className="mainContainer">
+      <Form.Group id="nateForm" encType="multipart/form-data">
+        <Row>
+          <Col>
+            <Form.Control
+              type="text"
+              placeholder="type your url"
+              ref={urlText}
+              id="urlInput"
+            />
+          </Col>
+          <Col>
+            <Button type="button" onClick={submit} id="submit">
+              submit
+            </Button>
+          </Col>
+        </Row>
+        <Row>
+          <Col className="center">Select Url History</Col>
+          <Col>
+            <Form.Control
+              as="select"
+              value={currentSelectedUrl}
+              onChange={onChangeSelect}
+            >
+              {historyUrl.map((url, index) => (
+                <option value={url} key={`nate-select-${index}`}>
+                  {url}
+                </option>
+              ))}
+            </Form.Control>
+          </Col>
+        </Row>
+      </Form.Group>
+      <div id="errorMessage">{errorMessage}</div>
       {loadingMessage ? (
         `Loading Word Count...`
       ) : (
-        <section>
+        <ListGroup>
+          <Row>
+            <Col className="center">Word</Col>
+            <Col className="center">Count</Col>
+          </Row>
           {words.map((word, index) => {
             return (
-              <div key={`nate-words${index}`}>
-                <div>{`${word.word}: ${word.count}`}</div>
-              </div>
+              <ListGroup.Item key={`nate-words${index}`} variant="primary">
+                <Row>
+                  <Col>
+                    <ListGroup.Item className="center">{`${word.word}:`}</ListGroup.Item>
+                  </Col>
+                  <Col>
+                    <ListGroup.Item className="center">{`${word.count}`}</ListGroup.Item>
+                  </Col>
+                </Row>
+              </ListGroup.Item>
             );
           })}
-        </section>
+        </ListGroup>
       )}
+      <Row>
+        <Col>
+          <div className="pagination1">
+            <Pagination>
+              <Pagination.First />
+              <Pagination.Prev />
+              <Pagination.Item>1</Pagination.Item>
+              <Pagination.Ellipsis />
+              <Pagination.Item active> 2</Pagination.Item>
+              <Pagination.Ellipsis />
+              <Pagination.Item>3</Pagination.Item>
+              <Pagination.Next />
+              <Pagination.Last />
+            </Pagination>
+          </div>
+        </Col>
+      </Row>
     </div>
   );
 };
