@@ -52,7 +52,6 @@ app.use((req, res, next) => {
  * @returns
  */
 app.post('/', upload.single('file'), (req, res, next) => {
-  console.log('req.body', req.body);
   const clientUrl = req.body.selectedUrl;
   const { urlText, fetchUrls } = req.body;
 

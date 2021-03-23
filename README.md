@@ -29,11 +29,14 @@ npm run-script prebuild
 go to `http://localhost:8080/` on your webbrowser
 
 
-To use jest test
+To use jest test on the backend
 ```
 jest index.test.js 
 ```
-
+To use puppeteer on the front end
+```
+jest 
+```
 
 _client server application that submits a ulr and text document and returns a word count of that text document_
 
