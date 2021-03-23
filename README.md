@@ -39,6 +39,6 @@ _reasons for the tech stack_
     node: the ability to create quick servers and use frameworks that are still being
     supported like superagent
     react: hooks makes it very to simple to mount and unmount data on fetch requests and html composition.
-    jest: the naming of the functions are very direct understandable and are simple to recall when implementing. 
+    jest: watch mode is amazing and the console log works very well. 
     puppeteer: very well documented and maintained. The methods naming are very well thought and easy to adapt. The setup is fairly simple and convienent to use.
 ```
