@@ -52,11 +52,13 @@ app.use((req, res, next) => {
  * @returns
  */
 app.post('/', upload.single('file'), (req, res, next) => {
+  console.log('req.body', req.body);
   const clientUrl = req.body.selectedUrl;
   const { urlText, fetchUrls } = req.body;
 
   // return the initial history of url if it exists
   if (fetchUrls === 'true') {
+    console.log('fetch is true');
     res.status(200).send({
       data: [],
       historyUrl: Object.keys(urlListJson),

@@ -29,6 +29,12 @@ npm run-script prebuild
 go to `http://localhost:8080/` on your webbrowser
 
 
+To use jest test
+```
+jest index.test.js 
+```
+
+
 _client server application that submits a ulr and text document and returns a word count of that text document_
 
 _reasons for the tech stack_ 
