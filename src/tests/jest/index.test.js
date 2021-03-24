@@ -14,7 +14,7 @@
 import 'regenerator-runtime/runtime';
 
 const supertest = require('supertest');
-const server = require('../../server/server');
+const server = require('../../server/testServer');
 const { outdoorsysequence, norvig } = require('../puppeteer/constants');
 
 const request = supertest(server);
