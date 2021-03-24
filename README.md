@@ -10,7 +10,12 @@ fetches a text document. The application returns a word count from that text doc
 git clone https://github.com/jolaya182/nateServerWordCount.git
 ```
 
-In src folder:
+To install:
+```
+npm  i
+```
+
+To run go to the src folder:
 ```
 npm  start
 ```
