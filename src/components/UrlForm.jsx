@@ -10,12 +10,10 @@
  */
 import React, { useState, useRef, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.css';
-import Form from 'react-bootstrap/Form';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import Button from 'react-bootstrap/Button';
-import { ListGroup } from 'react-bootstrap';
+
 import Paginator from './Paginator';
+import NateForm from './NateForm';
+import WordTable from './WordTable';
 import serverUrl from './utilComponentData/constants';
 import '../css/index.css';
 
@@ -329,77 +327,24 @@ const UrlForm = () => {
 
   return (
     <div className="mainContainer">
-      <Form.Group id="nateForm" encType="multipart/form-data">
-        <Row>
-          <Col>
-            <Form.Control
-              type="text"
-              placeholder="type your url"
-              ref={urlText}
-              id="urlInput"
-            />
-          </Col>
-          <Col>
-            <Button type="button" onClick={submit} id="submit">
-              submit
-            </Button>
-          </Col>
-        </Row>
-        <Row>
-          <Col className="center">
-            <Form.Control
-              as="select"
-              value={currentSelectedUrl}
-              onChange={onChangeSelect}
-            >
-              {historyUrl.map((url, index) => (
-                <option value={url} key={`nate-select-${index}`}>
-                  {url}
-                </option>
-              ))}
-            </Form.Control>
-          </Col>
-        </Row>
-      </Form.Group>
+      <NateForm
+        urlText={urlText}
+        submit={submit}
+        currentSelectedUrl={currentSelectedUrl}
+        onChangeSelect={onChangeSelect}
+        historyUrl={historyUrl}
+      />
       <div id="errorMessage">{errorMessage}</div>
-      <ListGroup>
-        <Row>
-          <Paginator
-            goToTheBegining={goToTheBegining}
-            paginatorObject={paginatorObject}
-            clickLeft={clickLeft}
-            clickRight={clickRight}
-            goToTheEnd={goToTheEnd}
-          />
-        </Row>
-        <ListGroup.Item variant="primary">
-          {loadingMessage ? (
-            <Row>
-              <Col className="center">Loading Word Count...</Col>
-            </Row>
-          ) : (
-            <Row>
-              <Col className="center">Word</Col>
-              <Col className="center">Count</Col>
-            </Row>
-          )}
-        </ListGroup.Item>
 
-        {words.map((word, index) => {
-          return (
-            <ListGroup.Item key={`nate-words${index}`} variant="primary">
-              <Row>
-                <Col>
-                  <ListGroup.Item className="center">{`${word.word}`}</ListGroup.Item>
-                </Col>
-                <Col>
-                  <ListGroup.Item className="center">{`${word.count}`}</ListGroup.Item>
-                </Col>
-              </Row>
-            </ListGroup.Item>
-          );
-        })}
-      </ListGroup>
+      <WordTable
+        goToTheBegining={goToTheBegining}
+        paginatorObject={paginatorObject}
+        clickLeft={clickLeft}
+        clickRight={clickRight}
+        goToTheEnd={goToTheEnd}
+        loadingMessage={loadingMessage}
+        words={words}
+      />
 
       <Paginator
         goToTheBegining={goToTheBegining}
