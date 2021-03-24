@@ -1,4 +1,4 @@
-# nateServerWordCount
+# nateReactServerWordCount
 Client server application in where the user submits a url text and the application
 fetches a text document. The application returns a word count from that text document.
 
