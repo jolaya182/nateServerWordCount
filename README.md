@@ -1,5 +1,6 @@
 # nateServerWordCount
-client server application that submits a ulr and text document and returns a word count of that text document
+Client server application in where the user submits a url text and the application
+fetches a text document. The application returns a word count from that text document.
 
 <img src="src/pictures/nateFormGif.gif" title="nate"/>
 
