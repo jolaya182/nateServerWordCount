@@ -15,8 +15,6 @@ const express = require('express');
 const app = express();
 // multer
 const multer = require('multer');
-// // port = 3000
-// const port = 3000;
 // file structure
 const fs = require('fs');
 // find directory
@@ -29,6 +27,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 const urlListPath = path.join(__dirname, 'urlList.json');
 const urlListJson = JSON.parse(fs.readFileSync(urlListPath, 'UTF-8'));
+const { chunkLimit } = require('./severConstants');
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -53,25 +52,30 @@ app.use((req, res, next) => {
  */
 app.post('/', upload.single('file'), (req, res, next) => {
   const clientUrl = req.body.selectedUrl;
-  const { urlText, fetchUrls } = req.body;
+  const { urlText, fetchUrls, pageIndex } = req.body;
 
   // return the initial history of url if it exists
   if (fetchUrls === 'true') {
-    console.log('fetch is true');
+    const urls = Object.keys(urlListJson);
+    urls.unshift('Select a Url');
     res.status(200).send({
       data: [],
-      historyUrl: Object.keys(urlListJson),
-      currentSelectedUrl: ''
+      historyUrl: urls,
+      currentSelectedUrl: '',
+      totalChunks: 0
     });
     return next();
   }
 
   // if the string exists then return those words
   if (urlListJson[clientUrl]) {
+    const urls = Object.keys(urlListJson);
+    urls.unshift('Select a Url');
     res.status(200).send({
-      data: urlListJson[clientUrl].wordCountTableArray,
-      historyUrl: Object.keys(urlListJson),
-      currentSelectedUrl: clientUrl
+      data: urlListJson[clientUrl].wordCountTableArray[pageIndex],
+      historyUrl: urls,
+      currentSelectedUrl: clientUrl,
+      totalChunks: urlListJson[clientUrl].wordCountTableArray.length
     });
     return next();
   }
@@ -113,13 +117,25 @@ app.post('/', upload.single('file'), (req, res, next) => {
 
     // set the the count table in an array
     const wordCountTableArray = [];
+    let chunk = [];
+    let wordIndex = 0;
+    console.log('chunkLimit', chunkLimit);
     wordCountTable.forEach((count, word) => {
-      wordCountTableArray.push({ word, count });
+      if ((wordIndex + 1) % chunkLimit === 0) {
+        chunk.push({ word, count });
+        wordCountTableArray.push(chunk);
+        chunk = [];
+      } else {
+        chunk.push({ word, count });
+      }
+      wordIndex += 1;
     });
+
+    if (chunk.length > 0) wordCountTableArray.push(chunk);
 
     // structure the object for hash table like lookup search.
     const directory = {
-      documentWordCount: wordCountTableArray.length,
+      documentWordCount: wordIndex,
       wordCountTableArray
     };
 
@@ -129,13 +145,16 @@ app.post('/', upload.single('file'), (req, res, next) => {
       if (eror) console.log('error at writing time');
       console.log('congrats written');
     });
+
+    const urls = Object.keys(urlListJson);
+    urls.unshift('Select a Url');
     res.status(200).send({
-      data: wordCountTableArray,
-      historyUrl: Object.keys(urlListJson),
-      currentSelectedUrl: urlText
+      data: wordCountTableArray[0],
+      historyUrl: urls,
+      currentSelectedUrl: urlText,
+      totalChunks: wordCountTableArray.length
     });
   });
 });
 
-// app.listen(port, () => console.log('listening to port:', port));
 module.exports = app;
