@@ -14,7 +14,6 @@ import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
-import Pagination from 'react-bootstrap/Pagination';
 import { ListGroup } from 'react-bootstrap';
 import Paginator from './Paginator';
 import serverUrl from './utilComponentData/constants';

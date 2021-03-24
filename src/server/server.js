@@ -119,7 +119,6 @@ app.post('/', upload.single('file'), (req, res, next) => {
     const wordCountTableArray = [];
     let chunk = [];
     let wordIndex = 0;
-    console.log('chunkLimit', chunkLimit);
     wordCountTable.forEach((count, word) => {
       if ((wordIndex + 1) % chunkLimit === 0) {
         chunk.push({ word, count });
@@ -143,7 +142,6 @@ app.post('/', upload.single('file'), (req, res, next) => {
     urlListJson[urlText] = directory;
     fs.writeFileSync(urlListPath, JSON.stringify(urlListJson), (eror) => {
       if (eror) console.log('error at writing time');
-      console.log('congrats written');
     });
 
     const urls = Object.keys(urlListJson);
