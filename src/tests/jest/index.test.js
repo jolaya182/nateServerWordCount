@@ -14,7 +14,8 @@
 import 'regenerator-runtime/runtime';
 
 const supertest = require('supertest');
-const { server, outdoorsysequence, norvig } = require('../../server/server');
+const server = require('../../server/server');
+const { outdoorsysequence, norvig } = require('../puppeteer/constants');
 
 const request = supertest(server);
 describe('Post /', () => {
@@ -37,11 +38,11 @@ describe('Post /', () => {
     processTxtWordCount10();
   });
 
-  test('process word count of 41569 a txt file from a webpage', (done) => {
-    async function processTxtWordCount41569(data) {
+  test('process word count of 500 a txt file from a webpage', (done) => {
+    async function processTxtWordCount500(data) {
       try {
         const urlText = norvig;
-        const documentWordCount = 41569;
+        const documentWordCount = 500;
         const response = await request
           .post('/')
           .send({ selectedUrl: '', urlText, fetchUrls: false })
@@ -52,6 +53,6 @@ describe('Post /', () => {
         done(error);
       }
     }
-    processTxtWordCount41569();
+    processTxtWordCount500();
   });
 });
