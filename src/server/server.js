@@ -7,6 +7,7 @@
  * author: javier olaya
  *
  * description: this file handles all the end points for the 'nateServer' application requests
+ * and processes the words of a text file from external urls
  */
 
 // call in express
