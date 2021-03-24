@@ -1,7 +1,7 @@
 # nateServerWordCount
 client server application that submits a ulr and text document and returns a word count of that text document
 
-<!-- <img src="src/pictures/.gif" title="UiDirectory"/> -->
+<img src="src/pictures/nateFormGif.gif" title="nate"/>
 
 ## To Run:
 
@@ -26,7 +26,7 @@ To build
 npm run-script prebuild
 ```
 
-go to `http://localhost:8080/` on your webbrowser
+go to `http://localhost:8080/` url on your webbrowser
 
 
 To use jest test on the backend
