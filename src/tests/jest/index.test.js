@@ -2,7 +2,15 @@
 /* eslint-disable jest/valid-describe */
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
-// import express from 'express';
+/**
+ * title: puppeteer.test.js
+ *
+ * date: 3/22/2020
+ *
+ * author: javier olaya
+ *
+ * description: this file handles all the form submission and words rendering
+ */
 import 'regenerator-runtime/runtime';
 
 const supertest = require('supertest');
@@ -38,7 +46,6 @@ describe('Post /', () => {
           .post('/')
           .send({ selectedUrl: '', urlText, fetchUrls: false })
           .expect(200);
-        // console.log(response.body);
         expect(response.body.data).toHaveLength(documentWordCount);
         done();
       } catch (error) {

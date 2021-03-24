@@ -43,11 +43,13 @@ _client server application that submits a ulr and text document and returns a wo
 _reasons for the tech stack_ 
 
 ```
-    json: store the text in an oject that serves as a hash table to when retriving 
-    urls and its words.
-    node: the ability to create quick servers and use frameworks that are still being
-    supported like superagent
-    react: hooks makes it very to simple to mount and unmount data on fetch requests and html composition.
-    jest: watch mode is amazing and the console log works very well. 
-    puppeteer: very well documented and maintained. The methods naming are very well thought and easy to adapt. The setup is fairly simple and convienent to use.
+    JSON: stores the text in an object that serves as a hash table to when retrieving 
+    URLs and their words. This minimizes the amount of technology used for this project.
+    node: the ability to create quick servers and use frameworks that are still being supported like superagent. It is very well suited for front-end applications that have to deal with real-time solutions, messengers, end-to-end testing, IoT, and streaming platforms.
+    react: hooks makes it very simple to mount and unmount data on fetch requests and Html composition. 
+    The composition of the functions can be easily tested with other libraries like 'enzyme'. The unidirectional composition allows for concerns to be separated into smaller components.
+    jest: watch mode is amazing and the console log works very well with technologies like 'puppeteer'. 
+    puppeteer: puppeteer uses javascript as a headless browser, it is very well documented and maintained. 
+    The methods naming are very well thought-out and easy to adapt. The setup is fairly simple and convenient to use.
+
 ```
