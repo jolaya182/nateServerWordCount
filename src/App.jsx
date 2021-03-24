@@ -2,7 +2,7 @@
 /**
  * title: App.js
  *
- * date: / /
+ * date: 3/20/21
  *
  * author: javier olaya
  *

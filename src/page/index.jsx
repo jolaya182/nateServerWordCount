@@ -8,8 +8,7 @@
  *
  * description: this component handles the form that collects the url and a text for a word count
  */
-// main page component create the 404 page and the all other
-// pages as exported components
+
 import React from 'react';
 import UrlForm from '../components/UrlForm';
 

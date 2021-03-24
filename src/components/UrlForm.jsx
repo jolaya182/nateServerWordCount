@@ -193,7 +193,6 @@ const UrlForm = () => {
       totalChunks
     };
 
-    console.log('selectedValue', selectedValue);
     if (selectedValue === 'Select a Url') {
       console.log('should return');
       return;
