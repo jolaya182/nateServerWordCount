@@ -105,7 +105,6 @@ const UrlForm = () => {
       )
       .then(
         (json) => {
-          json.data.shift();
           upatedWords(json.data);
           updateHistory(json.historyUrl);
           setSelectedUrl(json.currentSelectedUrl);

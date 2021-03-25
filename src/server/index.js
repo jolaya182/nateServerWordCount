@@ -99,7 +99,8 @@ app.post('/', upload.single('file'), (req, res, next) => {
 
     // process the text
     const multerText = JSON.stringify(resy.text);
-    const textArray = multerText.split(/[\r\n]+/g);
+    const textArray = multerText.split(/\n|\\n|\r|\\/g);
+    console.log('textArray', textArray);
     const wordCountTable = new Map();
     let lowerC = '';
 
