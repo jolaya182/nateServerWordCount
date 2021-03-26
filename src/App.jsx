@@ -12,9 +12,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Route, Switch, HashRouter as Router } from 'react-router-dom';
-import ErrorBoundary from './components/UtilComponents/ErrorBoundary';
-import { Whoops404, Form } from './page';
-import pages from './css/index.scss';
+import ErrorBoundary from './frontEnd/components/UtilComponents/ErrorBoundary';
+import { Whoops404, Form } from './frontEnd/page';
+import pages from './frontEnd/css/index.scss';
 
 const App = () => (
   <ErrorBoundary>

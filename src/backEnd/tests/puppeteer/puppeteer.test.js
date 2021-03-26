@@ -13,7 +13,7 @@ import 'regenerator-runtime/runtime';
 const puppeteer = require('puppeteer');
 const path = require('path');
 
-const serverUrl = path.resolve(__dirname, '../../../dist/index.html');
+const serverUrl = path.resolve(__dirname, '../../../../dist/index.html');
 
 describe('form and server response validation /', () => {
   test('show client submitted an empty url', async (done) => {

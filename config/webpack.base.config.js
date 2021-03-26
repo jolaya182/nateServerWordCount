@@ -66,7 +66,7 @@ module.exports = (env) =>
         new HtmlWebpackPlugin({
           template: './src/mainIndex.html',
           filename: './index.html',
-          favicon: './src/pictures/jLogo.ico'
+          favicon: './src/backEnd/pictures/jLogo.ico'
         }),
         new webpack.DefinePlugin({
           'process.env.VERSION': JSON.stringify(env.VERSION),
