@@ -37,11 +37,11 @@ go to `http://localhost:8080/` url on your webbrowser
 
 To use jest test on the backend
 ```
-jest index.test.js 
+npm test index.test.js 
 ```
 To use puppeteer on the front end
 ```
-jest puppeteer.test.js
+npm test puppeteer.test.js
 ```
 
 _client server application that submits a ulr and text document and returns a word count of that text document_
