@@ -98,22 +98,20 @@ app.post('/', upload.single('file'), (req, res, next) => {
     }
 
     // process the text
-    const multerText = JSON.stringify(resy.text);
-    const textArray = multerText.split(/[\r\n]+/g);
+    const multerText = resy.text;
+    const textArray = multerText.match(/\w+/g);
+
     const wordCountTable = new Map();
     let lowerC = '';
 
     // separate the words and count them
     textArray.forEach((row) => {
-      const words = row.trim().split(/[^A-Za-z']/g);
-      words.forEach((word) => {
-        lowerC = word.toLowerCase();
-        if (wordCountTable.has(lowerC)) {
-          wordCountTable.set(lowerC, wordCountTable.get(lowerC) + 1);
-          return;
-        }
-        wordCountTable.set(lowerC, 1);
-      });
+      lowerC = row.toLowerCase();
+      if (wordCountTable.has(lowerC)) {
+        wordCountTable.set(lowerC, wordCountTable.get(lowerC) + 1);
+        return;
+      }
+      wordCountTable.set(lowerC, 1);
     });
 
     // set the the count table in an array
