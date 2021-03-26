@@ -41,6 +41,7 @@ npm test index.test.js
 ```
 To use puppeteer on the front end
 ```
+npm run-script runserver
 npm test puppeteer.test.js
 ```
 
