@@ -85,18 +85,65 @@ const UrlForm = () => {
     updatePaginator(newerPaginatorObject);
   };
 
+  const fetchPost = (body, PaginatorObject)=>{
+    console.log('body', body);
+    const options ={
+      method: 'POST',
+      body:body,
+      url:body.url || '/'
+    };
+
+    urlRequest(options, PaginatorObject);
+
+  };
+
+
+  const fetchGet = (data, PaginatorObject)=>{
+    const options ={
+      method: 'GET',
+      data:data.data,
+      url:data.url || '/',
+      // 'Content-Type': 'application/x-www-form-urlencoded'
+    };
+
+    urlRequest(options, PaginatorObject);
+  };
+
+
+  const fetchUpdate = (data, PaginatorObject)=>{
+    const options ={
+      method: 'PUT',
+      data:data,
+      url:body.url || '/'
+    };
+
+    urlRequest(options, PaginatorObject);
+  };
+
+
+  const fetchDelete = (data, PaginatorObject)=>{
+    const options ={
+      method: 'DELETE',
+      daata:data,
+      url:body.url || '/'
+    };
+
+    urlRequest(options, PaginatorObject);
+  };
+
+
+
   /**
    *  does a post request with a formdata object
    *
    * @param {*} form
    */
-  const urlRequest = (form, newPaginatorObject = {}) => {
-    const options = {
-      method: 'POST',
-      body: form
-    };
-
-    fetch(serverUrl, options)
+  const urlRequest = (options, newPaginatorObject = {}) => {
+    // if (options.method != "POST") options = {...options, headers:{
+    //   'Content-Type': 'application/json'
+    // }}
+    console.log('options', options);
+    fetch(serverUrl+options.url, options)
       .then(
         (response) => response.json(),
         (error) => {
@@ -105,13 +152,10 @@ const UrlForm = () => {
       )
       .then(
         (json) => {
-          upatedWords(json.data);
-          updateHistory(json.historyUrl);
-          setSelectedUrl(json.currentSelectedUrl);
-          updateLoadMessage(false);
-          updateErrorMessage('');
-          updatePageIndex(json.totalChunks, newPaginatorObject);
+          // update all variables
+          updateAllWordApplicationVariables(json, newPaginatorObject)
           return json;
+
         },
         () => {
           updateErrorMessage('please type in a legit url');
@@ -135,7 +179,7 @@ const UrlForm = () => {
     form.append('selectedUrl', currentSelectedUrl);
     form.append('pageIndex', newPaginatorObject.pageIndex);
     updateLoadMessage(true);
-    urlRequest(form, newPaginatorObject);
+    urlRequest({form}, newPaginatorObject);
   };
 
   /**
@@ -146,7 +190,7 @@ const UrlForm = () => {
   const submit = (e) => {
     // make the post request
     e.preventDefault();
-    const form = new FormData();
+    const form = new FornData();
     const url = urlText.current.value;
     const selectedUrl = '';
     const { totalChunks } = paginatorObject;
@@ -166,10 +210,8 @@ const UrlForm = () => {
       urlString = url;
     }
     form.append('urlText', urlString);
-    form.append('selectedUrl', selectedUrl);
-    form.append('pageIndex', 0);
     updateLoadMessage(true);
-    urlRequest(form, newPaginatorObject);
+    fetchPost(form, newPaginatorObject);
   };
 
   /**
@@ -196,12 +238,13 @@ const UrlForm = () => {
       console.log('should return');
       return;
     }
-    const form = new FormData();
-    form.append('urlText', null);
-    form.append('selectedUrl', selectedValue);
-    form.append('pageIndex', 0);
+    
     updateLoadMessage(true);
-    urlRequest(form, newPaginatorObject);
+    const form = new FormData();
+    form.append('selectedValue', selectedValue);
+    form.append('pageIndex', 0);
+    form.append('url','/urlSelected')
+    fetchPost(form, newPaginatorObject);
   };
 
   /**
@@ -231,10 +274,25 @@ const UrlForm = () => {
    */
   useEffect(() => {
     // delete initial data
-    const form = new FormData();
-    form.append('fetchUrls', true);
-    urlRequest(form, paginatorObject);
+    fetchGet({}, paginatorObject);
   }, []);
+
+  /**
+   * updates the application variables that need are
+   * dependant on the server's response
+   *
+   * @return {*}
+   */
+  const updateAllWordApplicationVariables = (serverDataResponse, newPaginatorObject) => {
+
+    console.log('serverDataResponse', serverDataResponse)
+    upatedWords(serverDataResponse.words);
+    updateHistory(serverDataResponse.historyUrl);
+    setSelectedUrl(serverDataResponse.currentSelectedUrl);
+    updateErrorMessage(serverDataResponse.errorMessage);
+    updatePageIndex(serverDataResponse.totalChunks, newPaginatorObject);
+    updateLoadMessage(false);
+  }
 
   /**
    * updates the paginiator's positions
