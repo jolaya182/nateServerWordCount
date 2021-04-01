@@ -85,65 +85,37 @@ const UrlForm = () => {
     updatePaginator(newerPaginatorObject);
   };
 
-  const fetchPost = (body, PaginatorObject)=>{
-    console.log('body', body);
-    const options ={
-      method: 'POST',
-      body:body,
-      url:body.url || '/'
-    };
-
-    urlRequest(options, PaginatorObject);
-
+  /**
+   * updates the application variables that need are
+   * dependant on the server's response
+   *
+   * @return {*}
+   */
+  const updateAllWordApplicationVariables = (
+    serverDataResponse,
+    newPaginatorObject
+  ) => {
+    console.log('serverDataResponse', serverDataResponse);
+    upatedWords(serverDataResponse.words);
+    updateHistory(serverDataResponse.historyUrl);
+    setSelectedUrl(serverDataResponse.currentSelectedUrl);
+    updateErrorMessage(serverDataResponse.errorMessage);
+    updatePageIndex(serverDataResponse.totalChunks, newPaginatorObject);
+    updateLoadMessage(false);
   };
-
-
-  const fetchGet = (data, PaginatorObject)=>{
-    const options ={
-      method: 'GET',
-      data:data.data,
-      url:data.url || '/',
-      // 'Content-Type': 'application/x-www-form-urlencoded'
-    };
-
-    urlRequest(options, PaginatorObject);
-  };
-
-
-  const fetchUpdate = (data, PaginatorObject)=>{
-    const options ={
-      method: 'PUT',
-      data:data,
-      url:body.url || '/'
-    };
-
-    urlRequest(options, PaginatorObject);
-  };
-
-
-  const fetchDelete = (data, PaginatorObject)=>{
-    const options ={
-      method: 'DELETE',
-      daata:data,
-      url:body.url || '/'
-    };
-
-    urlRequest(options, PaginatorObject);
-  };
-
-
 
   /**
    *  does a post request with a formdata object
    *
    * @param {*} form
    */
-  const urlRequest = (options, newPaginatorObject = {}) => {
+  const urlRequest = (options, url, newPaginatorObject = {}) => {
     // if (options.method != "POST") options = {...options, headers:{
     //   'Content-Type': 'application/json'
     // }}
-    console.log('options', options);
-    fetch(serverUrl+options.url, options)
+    const newUrl = serverUrl + url;
+    console.log('options', options, 'url', newUrl);
+    fetch(newUrl, options)
       .then(
         (response) => response.json(),
         (error) => {
@@ -153,9 +125,8 @@ const UrlForm = () => {
       .then(
         (json) => {
           // update all variables
-          updateAllWordApplicationVariables(json, newPaginatorObject)
+          updateAllWordApplicationVariables(json, newPaginatorObject);
           return json;
-
         },
         () => {
           updateErrorMessage('please type in a legit url');
@@ -166,6 +137,45 @@ const UrlForm = () => {
         updateErrorMessage(error.message);
         updateLoadMessage(false);
       });
+  };
+  const fetchPost = (body, PaginatorObject, url = '/') => {
+    console.log('body', body);
+    const options = {
+      method: 'POST',
+      body
+    };
+    console.log('url', url);
+    urlRequest(options, url, PaginatorObject);
+  };
+  // form, newPaginatorObject, url;
+  const fetchGet = (data, PaginatorObject, url = '/') => {
+    const options = {
+      method: 'GET',
+      data
+      // 'Content-Type': 'application/x-www-form-urlencoded'
+      // 'Content-Type': 'application/application-json'
+    };
+
+    urlRequest(options, url, PaginatorObject);
+  };
+
+  // const fetchUpdate = (data, PaginatorObject) => {
+  //   const options = {
+  //     method: 'PUT',
+  //     data,
+  //     url: data.url || '/'
+  //   };
+
+  //   urlRequest(options, PaginatorObject);
+  // };
+
+  const fetchDelete = (data, PaginatorObject, url = '/') => {
+    const options = {
+      method: 'DELETE',
+      daata: data
+    };
+
+    urlRequest(options, url, PaginatorObject);
   };
 
   /**
@@ -179,7 +189,7 @@ const UrlForm = () => {
     form.append('selectedUrl', currentSelectedUrl);
     form.append('pageIndex', newPaginatorObject.pageIndex);
     updateLoadMessage(true);
-    urlRequest({form}, newPaginatorObject);
+    urlRequest({ form }, newPaginatorObject);
   };
 
   /**
@@ -190,7 +200,7 @@ const UrlForm = () => {
   const submit = (e) => {
     // make the post request
     e.preventDefault();
-    const form = new FornData();
+    const form = new FormData();
     const url = urlText.current.value;
     const selectedUrl = '';
     const { totalChunks } = paginatorObject;
@@ -238,13 +248,16 @@ const UrlForm = () => {
       console.log('should return');
       return;
     }
-    
+
     updateLoadMessage(true);
-    const form = new FormData();
-    form.append('selectedValue', selectedValue);
-    form.append('pageIndex', 0);
-    form.append('url','/urlSelected')
-    fetchPost(form, newPaginatorObject);
+    const form = { selectedValue, pageIndex: 0 };
+    const url = `/urlSelected/?selectedValue=${selectedValue}&pageIndex=0`;
+    fetchGet(form, newPaginatorObject, url);
+  };
+
+  const deleteUrl = () => {
+    updateLoadMessage(true);
+    fetchDelete('data');
   };
 
   /**
@@ -276,23 +289,6 @@ const UrlForm = () => {
     // delete initial data
     fetchGet({}, paginatorObject);
   }, []);
-
-  /**
-   * updates the application variables that need are
-   * dependant on the server's response
-   *
-   * @return {*}
-   */
-  const updateAllWordApplicationVariables = (serverDataResponse, newPaginatorObject) => {
-
-    console.log('serverDataResponse', serverDataResponse)
-    upatedWords(serverDataResponse.words);
-    updateHistory(serverDataResponse.historyUrl);
-    setSelectedUrl(serverDataResponse.currentSelectedUrl);
-    updateErrorMessage(serverDataResponse.errorMessage);
-    updatePageIndex(serverDataResponse.totalChunks, newPaginatorObject);
-    updateLoadMessage(false);
-  }
 
   /**
    * updates the paginiator's positions
@@ -389,6 +385,7 @@ const UrlForm = () => {
         currentSelectedUrl={currentSelectedUrl}
         onChangeSelect={onChangeSelect}
         historyUrl={historyUrl}
+        deleteUrl={deleteUrl}
       />
       <div id="errorMessage">{errorMessage}</div>
 

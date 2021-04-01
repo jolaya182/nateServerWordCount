@@ -156,28 +156,33 @@ app.use((req, res, next) => {
 //   });
 // });
 
-app.post('/urlSelected/', upload.single('file'), (req, res, next) => {
-  const {body} = req;
-  console.log(' urlSelected body', body  )
-  const {selectedUrl, pageIndex} = body;
+app.get('/urlSelected', (req, res, next) => {
+  const { query, data, body } = req;
+  const { selectedValue, pageIndex } = query;
+  console.log(' query', query);
+  console.log(' body', body);
+  console.log(' data', data);
+
+  // const { selectedValue, pageIndex } = params;
+  // pageIndex = parseInt(pageIndex, 10);
   const urls = Object.keys(urlListJson);
 
   res.status(200).send({
-    words: urlListJson[selectedUrl].wordCountTableArray[pageIndex],
+    words: urlListJson[selectedValue].wordCountTableArray[pageIndex],
     historyUrl: urls,
-    currentSelectedUrl: selectedUrl,
-    errorMessage: "",
-    totalChunks: urlListJson[selectedUrl].wordCountTableArray.length
+    currentSelectedUrl: selectedValue,
+    errorMessage: '',
+    totalChunks: urlListJson[selectedValue].wordCountTableArray.length
   });
   return next();
 });
 
 app.post('/', upload.single('file'), (req, res, next) => {
-  let { body } = req;
+  const { body } = req;
   console.log('body', body);
-  let { urlText } = body;
-  console.log("urlText", urlText)
-  // @todo get the urlText
+  const { urlText } = body;
+  console.log('urlText', urlText);
+  // @todo get the urlTextz
   superagent.get(urlText).end((err, resy) => {
     // check if the url was legit
     if (err) {
@@ -237,15 +242,13 @@ app.post('/', upload.single('file'), (req, res, next) => {
       words: wordCountTableArray[0],
       historyUrl: urls,
       currentSelectedUrl: urlText,
-      errorMessage: "",
+      errorMessage: '',
       totalChunks: wordCountTableArray.length
     });
-
   });
+});
 
-})
-
-app.get('/',  upload.single('file'),(req, res, next) => {
+app.get('/', upload.single('file'), (req, res, next) => {
   // get initial url string and its words
   const urls = Object.keys(urlListJson);
 
@@ -254,10 +257,10 @@ app.get('/',  upload.single('file'),(req, res, next) => {
     res.status(200).send({
       words: [],
       historyUrl: urls,
-      currentSelectedUrl: "",
-      errorMessage: "Enter a legit URL",
+      currentSelectedUrl: '',
+      errorMessage: 'Enter a legit URL',
       totalChunks: 0
-    })
+    });
     return next();
   }
 
@@ -265,40 +268,45 @@ app.get('/',  upload.single('file'),(req, res, next) => {
     words: urlString[0],
     historyUrl: Object.keys(urlListJson),
     currentSelectedUrl: urlString,
-    errorMessage: "",
+    errorMessage: '',
     totalChunks: 1
-  })
+  });
 
   return next();
-})
-
-
+});
 
 app.put('/', (req, res, next) => {
-  let { body } = req;
+  const { body } = req;
 
   res.status(200).send({
-    data: "",
-    historyUrl: "",
-    currentSelectedUrl: "",
-    totalChunks: ""
-  })
+    data: '',
+    historyUrl: '',
+    currentSelectedUrl: '',
+    totalChunks: '',
+    errorMessage: ''
+  });
 
   return next();
-})
+});
 
 app.delete('/', (req, res, next) => {
-  //get the url and delete it 
-  //return a confirmation message
+  // get the url and delete it
+  // return a confirmation message
+  const { body } = req;
+  const { selectedValue } = body;
+
+  delete urlListJson[selectedValue];
+  const urls = Object.keys(urlListJson);
+
   res.status(200).send({
-    data: "",
-    historyUrl: "",
-    currentSelectedUrl: "",
-    totalChunks: ""
-  })
+    data: '',
+    historyUrl: urls,
+    currentSelectedUrl: '',
+    totalChunks: '',
+    errorMessage: ''
+  });
 
   return next();
-})
-
+});
 
 module.exports = app;
