@@ -41,7 +41,12 @@ app.use(express.json());
  * @returns
  */
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  res.header(
+    'Access-Control-Allow-Headers',
+    'Content-Type'
+    // 'Access-Control-Allow-Methods'
+  );
+  res.header('Access-Control-Allow-Methods', 'DELETE, GET, POST, PUT, OPTIONS');
   // res.header('Access-Control-Expose-Headers', 'Content-Encoding');
   res.header('Access-Control-Allow-Origin', '*');
   next();
@@ -157,14 +162,11 @@ app.use((req, res, next) => {
 // });
 
 app.get('/urlSelected', (req, res, next) => {
-  const { query, data, body } = req;
+  const { query } = req;
   const { selectedValue, pageIndex } = query;
-  console.log(' query', query);
-  console.log(' body', body);
-  console.log(' data', data);
+  // console.log(' query', query);
 
   // const { selectedValue, pageIndex } = params;
-  // pageIndex = parseInt(pageIndex, 10);
   const urls = Object.keys(urlListJson);
 
   res.status(200).send({
@@ -252,8 +254,8 @@ app.get('/', upload.single('file'), (req, res, next) => {
   // get initial url string and its words
   const urls = Object.keys(urlListJson);
 
-  // console.log('req.body', req.data)
-  if (!urlListJson[0]) {
+  // console.log('urls', urls);
+  if (urls.length < 1) {
     res.status(200).send({
       words: [],
       historyUrl: urls,
@@ -265,9 +267,9 @@ app.get('/', upload.single('file'), (req, res, next) => {
   }
 
   res.status(200).send({
-    words: urlString[0],
+    words: [],
     historyUrl: Object.keys(urlListJson),
-    currentSelectedUrl: urlString,
+    currentSelectedUrl: '',
     errorMessage: '',
     totalChunks: 1
   });
@@ -279,7 +281,7 @@ app.put('/', (req, res, next) => {
   const { body } = req;
 
   res.status(200).send({
-    data: '',
+    words: '',
     historyUrl: '',
     currentSelectedUrl: '',
     totalChunks: '',
@@ -292,17 +294,21 @@ app.put('/', (req, res, next) => {
 app.delete('/', (req, res, next) => {
   // get the url and delete it
   // return a confirmation message
-  const { body } = req;
-  const { selectedValue } = body;
-
+  const { query } = req;
+  const { selectedValue } = query;
+  console.log('Object.keys(urlListJson)', Object.keys(urlListJson));
+  console.log('selectedValue', selectedValue);
   delete urlListJson[selectedValue];
   const urls = Object.keys(urlListJson);
-
+  console.log('urls', urls);
+  fs.writeFileSync(urlListPath, JSON.stringify(urlListJson), (err) => {
+    console.log('error', err);
+  });
   res.status(200).send({
-    data: '',
+    words: [],
     historyUrl: urls,
     currentSelectedUrl: '',
-    totalChunks: '',
+    totalChunks: 1,
     errorMessage: ''
   });
 

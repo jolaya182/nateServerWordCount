@@ -23,7 +23,8 @@ const NateForm = (props) => {
     submit,
     currentSelectedUrl,
     onChangeSelect,
-    historyUrl
+    historyUrl,
+    deleteUrl
   } = props;
   return (
     <Form.Group id="nateForm" encType="multipart/form-data">
@@ -38,7 +39,7 @@ const NateForm = (props) => {
         </Col>
         <Col>
           <Button type="button" onClick={submit} id="submit">
-            submit
+            Submit
           </Button>
         </Col>
       </Row>
@@ -55,6 +56,9 @@ const NateForm = (props) => {
               </option>
             ))}
           </Form.Control>
+          <Button type="button" onClick={deleteUrl} id="delete">
+            Delete
+          </Button>
         </Col>
       </Row>
     </Form.Group>

@@ -172,7 +172,7 @@ const UrlForm = () => {
   const fetchDelete = (data, PaginatorObject, url = '/') => {
     const options = {
       method: 'DELETE',
-      daata: data
+      data
     };
 
     urlRequest(options, url, PaginatorObject);
@@ -250,14 +250,32 @@ const UrlForm = () => {
     }
 
     updateLoadMessage(true);
+    setSelectedUrl(selectedValue);
     const form = { selectedValue, pageIndex: 0 };
     const url = `/urlSelected/?selectedValue=${selectedValue}&pageIndex=0`;
     fetchGet(form, newPaginatorObject, url);
   };
 
   const deleteUrl = () => {
+    const selectedValue = currentSelectedUrl;
+    const { totalChunks } = paginatorObject;
+    const newPaginatorObject = {
+      leftIndex: -1,
+      pageIndex: 0,
+      rightIndex: 1,
+      isLeftDisabled: true,
+      isMiddleDisabled: true,
+      isRightDisabled: true,
+      totalChunks
+    };
+
+    if (selectedValue === 'Select a Url') {
+      console.log('should return');
+      return;
+    }
     updateLoadMessage(true);
-    fetchDelete('data');
+    const url = `/?selectedValue=${selectedValue}`;
+    fetchDelete('data', newPaginatorObject, url);
   };
 
   /**
@@ -288,6 +306,7 @@ const UrlForm = () => {
   useEffect(() => {
     // delete initial data
     fetchGet({}, paginatorObject);
+    // deleteUrl();
   }, []);
 
   /**
