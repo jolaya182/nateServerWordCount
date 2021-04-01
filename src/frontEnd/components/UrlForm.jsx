@@ -27,6 +27,7 @@ const UrlForm = () => {
   const [words, upatedWords] = useState([]);
   const [historyUrl, updateHistory] = useState(['Select a Url']);
   const [currentSelectedUrl, setSelectedUrl] = useState('');
+  const [currentUrlNameToUpdate, setUpdateCurrentUrlName] = useState('');
   const [errorMessage, updateErrorMessage] = useState('');
   const [paginatorObject, updatePaginator] = useState({
     leftIndex: -1,
@@ -159,15 +160,14 @@ const UrlForm = () => {
     urlRequest(options, url, PaginatorObject);
   };
 
-  // const fetchUpdate = (data, PaginatorObject) => {
-  //   const options = {
-  //     method: 'PUT',
-  //     data,
-  //     url: data.url || '/'
-  //   };
+  const fetchUpdate = (data, PaginatorObject, url = '/') => {
+    const options = {
+      method: 'PUT',
+      data
+    };
 
-  //   urlRequest(options, PaginatorObject);
-  // };
+    urlRequest(options, url, PaginatorObject);
+  };
 
   const fetchDelete = (data, PaginatorObject, url = '/') => {
     const options = {
@@ -254,6 +254,41 @@ const UrlForm = () => {
     const form = { selectedValue, pageIndex: 0 };
     const url = `/urlSelected/?selectedValue=${selectedValue}&pageIndex=0`;
     fetchGet(form, newPaginatorObject, url);
+  };
+
+  const updateCurrentUrlName = (e) => {
+    // e.preventDefault()
+    const newUrlName = e.target.value;
+    setUpdateCurrentUrlName(newUrlName);
+  };
+
+  const updateUrl = (e) => {
+    const selectedValue = currentUrlNameToUpdate;
+    const { totalChunks } = paginatorObject;
+    const newPaginatorObject = {
+      leftIndex: -1,
+      pageIndex: 0,
+      rightIndex: 1,
+      isLeftDisabled: true,
+      isMiddleDisabled: true,
+      isRightDisabled: true,
+      totalChunks
+    };
+
+    console.log(
+      'selectedValue.length, currentSelectedUrl.length ',
+      selectedValue.length,
+      currentSelectedUrl.length
+    );
+    if (selectedValue.length < 1 || currentSelectedUrl.length < 1) {
+      console.log('should return');
+      return;
+    }
+
+    updateLoadMessage(true);
+    const url = `/?selectedValue=${selectedValue}&currentSelectedUrl=${currentSelectedUrl}`;
+    console.log('url update', url);
+    fetchUpdate('data', newPaginatorObject, url);
   };
 
   const deleteUrl = () => {
@@ -405,6 +440,8 @@ const UrlForm = () => {
         onChangeSelect={onChangeSelect}
         historyUrl={historyUrl}
         deleteUrl={deleteUrl}
+        updateUrl={updateUrl}
+        updateCurrentUrlName={updateCurrentUrlName}
       />
       <div id="errorMessage">{errorMessage}</div>
 

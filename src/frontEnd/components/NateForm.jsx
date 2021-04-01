@@ -24,7 +24,9 @@ const NateForm = (props) => {
     currentSelectedUrl,
     onChangeSelect,
     historyUrl,
-    deleteUrl
+    deleteUrl,
+    updateUrl,
+    updateCurrentUrlName
   } = props;
   return (
     <Form.Group id="nateForm" encType="multipart/form-data">
@@ -56,8 +58,25 @@ const NateForm = (props) => {
               </option>
             ))}
           </Form.Control>
+        </Col>
+        <Col>
           <Button type="button" onClick={deleteUrl} id="delete">
             Delete
+          </Button>
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+          <Form.Control
+            type="text"
+            placeholder="update your url name"
+            onChange={updateCurrentUrlName}
+            id="updateUrlInput"
+          />
+        </Col>
+        <Col>
+          <Button type="button" onClick={updateUrl} id="submit">
+            Update
           </Button>
         </Col>
       </Row>

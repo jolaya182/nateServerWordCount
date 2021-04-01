@@ -28,6 +28,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 const urlListPath = path.join(__dirname, 'urlList.json');
 const urlListJson = JSON.parse(fs.readFileSync(urlListPath, 'UTF-8'));
+const { url } = require('inspector');
 const { chunkLimit } = require('./severConstants');
 // const { urlencoded } = require('express');
 
@@ -278,13 +279,24 @@ app.get('/', upload.single('file'), (req, res, next) => {
 });
 
 app.put('/', (req, res, next) => {
-  const { body } = req;
+  const { query } = req;
+  const { selectedValue, currentSelectedUrl } = query;
+  const temp = urlListJson[currentSelectedUrl];
+  urlListJson[selectedValue] = temp;
+  delete urlListJson[currentSelectedUrl];
 
+  const urls = Object.keys(urlListJson);
+  console.log('urls', urls);
+  console.log('query', query);
+
+  fs.writeFileSync(urlListPath, JSON.stringify(urlListJson), (err) =>
+    console.log('error', err)
+  );
   res.status(200).send({
-    words: '',
-    historyUrl: '',
-    currentSelectedUrl: '',
-    totalChunks: '',
+    words: urlListJson[selectedValue].wordCountTableArray[0],
+    historyUrl: urls,
+    currentSelectedUrl,
+    totalChunks: urlListJson[selectedValue].wordCountTableArray.length,
     errorMessage: ''
   });
 
