@@ -26,7 +26,10 @@ import '../css/index.css';
 const UrlForm = () => {
   const [words, upatedWords] = useState([]);
   const [historyUrl, updateHistory] = useState(['Select a Url']);
-  const [currentSelectedUrl, setSelectedUrl] = useState('');
+  const [currentSelectedUrl, setSelectedUrl] = useState({
+    urlString: '',
+    urlId: 0
+  });
   const [currentUrlNameToUpdate, setUpdateCurrentUrlName] = useState('');
   const [errorMessage, updateErrorMessage] = useState('');
   const [paginatorObject, updatePaginator] = useState({
@@ -96,9 +99,18 @@ const UrlForm = () => {
     serverDataResponse,
     newPaginatorObject
   ) => {
-    console.log('serverDataResponse', serverDataResponse);
+    // console.log('serverDataResponse', serverDataResponse);
+    const newHistory = serverDataResponse.historyUrl.map((elem) => {
+      console.log('elem', elem);
+      return { urlId: elem.urlId, urlString: elem.urlString };
+    });
+    newHistory.unshift({ urlId: 0, urlString: 'Select a Url' });
+    console.log('newHistory', newHistory);
     upatedWords(serverDataResponse.words);
-    updateHistory(serverDataResponse.historyUrl);
+    updateHistory(
+      serverDataResponse.historyUrl.length < 1 ? historyUrl : newHistory
+    );
+    console.log('currentSelectedUrl', serverDataResponse.currentSelectedUrl);
     setSelectedUrl(serverDataResponse.currentSelectedUrl);
     updateErrorMessage(serverDataResponse.errorMessage);
     updatePageIndex(serverDataResponse.totalChunks, newPaginatorObject);
@@ -179,20 +191,6 @@ const UrlForm = () => {
   };
 
   /**
-   *  organizes the form it will be submitting
-   *  with a new index page number
-   * @param {*} newPaginatorObject
-   */
-  const requestPageIndexData = (newPaginatorObject) => {
-    const form = new FormData();
-    form.append('urlText', null);
-    form.append('selectedUrl', currentSelectedUrl);
-    form.append('pageIndex', newPaginatorObject.pageIndex);
-    updateLoadMessage(true);
-    urlRequest({ form }, newPaginatorObject);
-  };
-
-  /**
    *  submits a url search from the input form
    *
    * @param {*} e
@@ -202,7 +200,6 @@ const UrlForm = () => {
     e.preventDefault();
     const form = new FormData();
     const url = urlText.current.value;
-    const selectedUrl = '';
     const { totalChunks } = paginatorObject;
     const newPaginatorObject = {
       leftIndex: -1,
@@ -251,8 +248,12 @@ const UrlForm = () => {
 
     updateLoadMessage(true);
     setSelectedUrl(selectedValue);
+    const foundUrlStringObj = historyUrl.filter((url) => {
+      if (url.urlString === selectedValue) return true;
+      return false;
+    });
     const form = { selectedValue, pageIndex: 0 };
-    const url = `/urlSelected/?selectedValue=${selectedValue}&pageIndex=0`;
+    const url = `/urlSelected/?selectedValue=${selectedValue}&urlId=${foundUrlStringObj[0].urlId}&pageIndex=0`;
     fetchGet(form, newPaginatorObject, url);
   };
 
@@ -262,8 +263,7 @@ const UrlForm = () => {
     setUpdateCurrentUrlName(newUrlName);
   };
 
-  const updateUrl = (e) => {
-    const selectedValue = currentUrlNameToUpdate;
+  const updateUrl = () => {
     const { totalChunks } = paginatorObject;
     const newPaginatorObject = {
       leftIndex: -1,
@@ -275,24 +275,19 @@ const UrlForm = () => {
       totalChunks
     };
 
-    console.log(
-      'selectedValue.length, currentSelectedUrl.length ',
-      selectedValue.length,
-      currentSelectedUrl.length
-    );
-    if (selectedValue.length < 1 || currentSelectedUrl.length < 1) {
+    if (currentUrlNameToUpdate.length < 1) {
       console.log('should return');
       return;
     }
-
+    console.log('currentSelectedUrl.urlId', currentSelectedUrl.urlId);
     updateLoadMessage(true);
-    const url = `/?selectedValue=${selectedValue}&currentSelectedUrl=${currentSelectedUrl}`;
+    const url = `/?urlId=${currentSelectedUrl.urlId}&currentSelectedUrl=${currentUrlNameToUpdate}`;
     console.log('url update', url);
     fetchUpdate('data', newPaginatorObject, url);
   };
 
   const deleteUrl = () => {
-    const selectedValue = currentSelectedUrl;
+    const selectedValue = currentSelectedUrl.urlString;
     const { totalChunks } = paginatorObject;
     const newPaginatorObject = {
       leftIndex: -1,
@@ -309,7 +304,10 @@ const UrlForm = () => {
       return;
     }
     updateLoadMessage(true);
-    const url = `/?selectedValue=${selectedValue}`;
+    const urlId = historyUrl.find(
+      (urlObj) => urlObj.urlString === selectedValue
+    );
+    const url = `/?urlId=${urlId.urlId}`;
     fetchDelete('data', newPaginatorObject, url);
   };
 
@@ -362,7 +360,9 @@ const UrlForm = () => {
     newPaginatorObject.pageIndex -= 1;
     newPaginatorObject.rightIndex -= 1;
 
-    requestPageIndexData(newPaginatorObject);
+    // requestPageIndexData(newPaginatorObject);
+    const url = `/urlSelected/?urlId=${currentSelectedUrl.urlId}&selectedValue=${currentSelectedUrl.urlString}&pageIndex=${newPaginatorObject.pageIndex}`;
+    fetchGet({}, newPaginatorObject, url);
   };
 
   /**
@@ -382,7 +382,9 @@ const UrlForm = () => {
     newPaginatorObject.pageIndex += 1;
     newPaginatorObject.rightIndex += 1;
 
-    requestPageIndexData(newPaginatorObject);
+    // requestPageIndexData(newPaginatorObject);
+    const url = `/urlSelected/?urlId=${currentSelectedUrl.urlId}&selectedValue=${currentSelectedUrl.urlString}&pageIndex=${newPaginatorObject.pageIndex}`;
+    fetchGet({}, newPaginatorObject, url);
   };
 
   /**
@@ -403,7 +405,9 @@ const UrlForm = () => {
       totalChunks
     };
 
-    requestPageIndexData(newPaginatorObject);
+    const url = `/urlSelected/?urlId=${currentSelectedUrl.urlId}&selectedValue=${currentSelectedUrl.urlString}&pageIndex=0`;
+    fetchGet({}, newPaginatorObject, url);
+    // requestPageIndexData(newPaginatorObject);
   };
 
   /**
@@ -425,7 +429,9 @@ const UrlForm = () => {
       totalChunks
     };
 
-    requestPageIndexData(newPaginatorObject);
+    // requestPageIndexData(newPaginatorObject);
+    const url = `/urlSelected/?urlId=${currentSelectedUrl.urlId}&selectedValue=${currentSelectedUrl.urlString}&pageIndex=${newPaginatorObject.pageIndex}`;
+    fetchGet({}, newPaginatorObject, url);
   };
   // helps prevent the user requesting multiple
   // click before receiving the servers data
@@ -436,7 +442,7 @@ const UrlForm = () => {
       <NateForm
         urlText={urlText}
         submit={submit}
-        currentSelectedUrl={currentSelectedUrl}
+        currentSelectedUrl={currentSelectedUrl.urlString}
         onChangeSelect={onChangeSelect}
         historyUrl={historyUrl}
         deleteUrl={deleteUrl}

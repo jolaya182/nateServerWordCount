@@ -53,8 +53,8 @@ const NateForm = (props) => {
             onChange={onChangeSelect}
           >
             {historyUrl.map((url, index) => (
-              <option value={url} key={`nate-select-${index}`}>
-                {url}
+              <option value={url.urlString} key={`nate-select-${index}`}>
+                {url.urlString}
               </option>
             ))}
           </Form.Control>
