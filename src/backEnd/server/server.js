@@ -35,12 +35,13 @@ const { chunkLimit } = require('./severConstants');
 const db = new sqlLite3.Database('./backEnd/server/wordDatabase.db');
 let sql = '';
 
+db.exec(`PRAGMA foreign_keys = ON`);
 db.run(
   'CREATE TABLE IF NOT EXISTS urlTable (urlId INTEGER PRIMARY KEY AUTOINCREMENT, urlString TEXT, totalWords INTEGER)'
 );
 
 db.run(
-  'CREATE TABLE IF NOT EXISTS wordTable (urlWordId INTEGER , word TEXT, count INTEGER, CONSTRAINT fk_wordId FOREIGN KEY(urlWordId) REFERENCES urlTable (urlId) ON DELETE CASCADE)'
+  'CREATE TABLE IF NOT EXISTS wordTable (urlWordId INTEGER REFERENCES urlTable (urlId)ON DELETE CASCADE, word TEXT, count INTEGER )'
 );
 
 app.use(express.urlencoded({ extended: true }));
@@ -157,6 +158,38 @@ app.post('/', upload.single('file'), (req, res, next) => {
   });
 });
 
+app.get('/', upload.single('file'), (req, res, next) => {
+  // get initial url string and its words
+  // console.log('urls', urls);
+
+  // database
+  sql = `SELECT * FROM urlTable`;
+
+  db.all(sql, [], function (err, row) {
+    if (err) console.log('err', err);
+    console.log('rows', row);
+    const historyUrl = Object.values(row);
+    if (row.length < 1) {
+      res.status(200).send({
+        words: [],
+        historyUrl: [],
+        currentSelectedUrl: '',
+        errorMessage: 'Enter a legit URL',
+        totalChunks: 0
+      });
+      return next();
+    }
+    res.status(200).send({
+      words: [],
+      historyUrl,
+      currentSelectedUrl: '',
+      errorMessage: '',
+      totalChunks: 1
+    });
+    return next();
+  });
+});
+
 app.get('/urlSelected', (req, res, next) => {
   const { query } = req;
   const { selectedValue, urlId } = query;
@@ -191,39 +224,6 @@ app.get('/urlSelected', (req, res, next) => {
       currentSelectedUrl: { urlId, urlString: selectedValue },
       errorMessage: '',
       totalChunks: newChunkSize
-    });
-    return next();
-  });
-});
-
-app.get('/', upload.single('file'), (req, res, next) => {
-  // get initial url string and its words
-  // console.log('urls', urls);
-
-  // database
-  sql = `SELECT * FROM urlTable`;
-  // sql = `SELECT * FROM wordTable WHERE urlwordId = 2`;
-
-  db.all(sql, [], function (err, row) {
-    if (err) console.log('err', err);
-    console.log('rows', row);
-    const historyUrl = Object.values(row);
-    if (row.length < 1) {
-      res.status(200).send({
-        words: [],
-        historyUrl: [],
-        currentSelectedUrl: '',
-        errorMessage: 'Enter a legit URL',
-        totalChunks: 0
-      });
-      return next();
-    }
-    res.status(200).send({
-      words: [],
-      historyUrl,
-      currentSelectedUrl: '',
-      errorMessage: '',
-      totalChunks: 1
     });
     return next();
   });
