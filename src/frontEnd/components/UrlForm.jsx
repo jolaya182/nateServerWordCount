@@ -118,10 +118,7 @@ const UrlForm = () => {
    *
    * @param {*} form
    */
-  const urlRequest = (options, url, newPaginatorObject = {}) => {
-    // if (options.method != "POST") options = {...options, headers:{
-    //   'Content-Type': 'application/json'
-    // }}
+  const fetchRequest = (options, url, newPaginatorObject = {}) => {
     const newUrl = serverUrl + url;
     fetch(newUrl, options)
       .then(
@@ -151,18 +148,15 @@ const UrlForm = () => {
       method: 'POST',
       body
     };
-    urlRequest(options, url, PaginatorObject);
+    fetchRequest(options, url, PaginatorObject);
   };
-  // form, newPaginatorObject, url;
   const fetchGet = (data, PaginatorObject, url = '/') => {
     const options = {
       method: 'GET',
       data
-      // 'Content-Type': 'application/x-www-form-urlencoded'
-      // 'Content-Type': 'application/application-json'
     };
 
-    urlRequest(options, url, PaginatorObject);
+    fetchRequest(options, url, PaginatorObject);
   };
 
   const fetchUpdate = (data, PaginatorObject, url = '/') => {
@@ -171,7 +165,7 @@ const UrlForm = () => {
       data
     };
 
-    urlRequest(options, url, PaginatorObject);
+    fetchRequest(options, url, PaginatorObject);
   };
 
   const fetchDelete = (data, PaginatorObject, url = '/') => {
@@ -180,7 +174,7 @@ const UrlForm = () => {
       data
     };
 
-    urlRequest(options, url, PaginatorObject);
+    fetchRequest(options, url, PaginatorObject);
   };
 
   /**
@@ -250,7 +244,6 @@ const UrlForm = () => {
   };
 
   const updateCurrentUrlName = (e) => {
-    // e.preventDefault()
     const newUrlName = e.target.value;
     setUpdateCurrentUrlName(newUrlName);
   };
@@ -327,7 +320,6 @@ const UrlForm = () => {
   useEffect(() => {
     // delete initial data
     fetchGet({}, paginatorObject);
-    // deleteUrl();
   }, []);
 
   /**
@@ -348,7 +340,6 @@ const UrlForm = () => {
     newPaginatorObject.pageIndex -= 1;
     newPaginatorObject.rightIndex -= 1;
 
-    // requestPageIndexData(newPaginatorObject);
     const url = `/urlSelected/?urlId=${currentSelectedUrl.urlId}&selectedValue=${currentSelectedUrl.urlString}&pageIndex=${newPaginatorObject.pageIndex}`;
     fetchGet({}, newPaginatorObject, url);
   };
@@ -370,7 +361,6 @@ const UrlForm = () => {
     newPaginatorObject.pageIndex += 1;
     newPaginatorObject.rightIndex += 1;
 
-    // requestPageIndexData(newPaginatorObject);
     const url = `/urlSelected/?urlId=${currentSelectedUrl.urlId}&selectedValue=${currentSelectedUrl.urlString}&pageIndex=${newPaginatorObject.pageIndex}`;
     fetchGet({}, newPaginatorObject, url);
   };
@@ -395,7 +385,6 @@ const UrlForm = () => {
 
     const url = `/urlSelected/?urlId=${currentSelectedUrl.urlId}&selectedValue=${currentSelectedUrl.urlString}&pageIndex=0`;
     fetchGet({}, newPaginatorObject, url);
-    // requestPageIndexData(newPaginatorObject);
   };
 
   /**
@@ -417,7 +406,6 @@ const UrlForm = () => {
       totalChunks
     };
 
-    // requestPageIndexData(newPaginatorObject);
     const url = `/urlSelected/?urlId=${currentSelectedUrl.urlId}&selectedValue=${currentSelectedUrl.urlString}&pageIndex=${newPaginatorObject.pageIndex}`;
     fetchGet({}, newPaginatorObject, url);
   };
