@@ -74,24 +74,24 @@ app.post('/', upload.single('file'), (req, res, next) => {
     }
 
     // process the text
-    const textArray = resy.text.match(/\w+/g);
+    const wordsArray = resy.text.match(/\w+/g);
 
-    const wordCountTable = new Map();
-    let lowerC = '';
+    const wordMap = new Map();
+    let lowerCaseWord = '';
 
     // separate the words and count them
-    textArray.forEach((row) => {
-      lowerC = row.toLowerCase();
-      if (wordCountTable.has(lowerC)) {
-        wordCountTable.set(lowerC, wordCountTable.get(lowerC) + 1);
+    wordsArray.forEach((row) => {
+      lowerCaseWord = row.toLowerCase();
+      if (wordMap.has(lowerCaseWord)) {
+        wordMap.set(lowerCaseWord, wordMap.get(lowerCaseWord) + 1);
         return;
       }
-      wordCountTable.set(lowerC, 1);
+      wordMap.set(lowerCaseWord, 1);
     });
 
     // database
     db.serialize(() => {
-      sql = `INSERT INTO urlTable ( urlString, totalWords) VALUES('${urlText}', '${wordCountTable.size}')`;
+      sql = `INSERT INTO urlTable ( urlString, totalWords) VALUES('${urlText}', '${wordMap.size}')`;
       let currentId = 0;
       // eslint-disable-next-line func-names
       db.run(sql, [], function (er) {
@@ -101,32 +101,32 @@ app.post('/', upload.single('file'), (req, res, next) => {
 
         currentId = this.lastID;
         // json set the the count table in an array
-        const wordCountTableArray = [];
-        let chunk = [];
+        const uniqueWords = [];
+        let wordChunk = [];
         let wordIndex = 0;
         const stmt = db.prepare(
           `INSERT INTO wordTable (urlWordId, word, count) VALUES (?,?,?)`
         );
 
-        wordCountTable.forEach((count, word) => {
+        wordMap.forEach((count, word) => {
           if ((wordIndex + 1) % chunkLimit === 0) {
-            chunk.push({ word, count });
-            wordCountTableArray.push(chunk);
-            chunk = [];
+            wordChunk.push({ word, count });
+            uniqueWords.push(wordChunk);
+            wordChunk = [];
           } else {
-            chunk.push({ word, count });
+            wordChunk.push({ word, count });
           }
           wordIndex += 1;
           stmt.run(currentId, word, count);
         });
-        if (chunk.length > 0) wordCountTableArray.push(chunk);
+        if (wordChunk.length > 0) uniqueWords.push(wordChunk);
 
         const newstmt = `SELECT * FROM urlTable`;
         db.all(newstmt, [], (errors, row) => {
-          let newChunkSize = Math.floor(wordCountTable.size / chunkLimit);
+          let newChunkSize = Math.ceil(wordMap.size / chunkLimit);
           newChunkSize = newChunkSize > 1 ? newChunkSize : 1;
           res.status(200).send({
-            words: wordCountTableArray[0],
+            words: uniqueWords[0],
             historyUrl: row,
             currentSelectedUrl: urlText,
             errorMessage: '',
@@ -146,7 +146,6 @@ app.post('/', upload.single('file'), (req, res, next) => {
  * @returns
  */
 app.get('/', upload.single('file'), (req, res, next) => {
-  // database
   sql = `SELECT * FROM urlTable`;
 
   db.all(sql, [], (err, row) => {
@@ -204,7 +203,6 @@ app.get('/urlSelected', (req, res, next) => {
       words = row;
     }
     const newChunkSize = Math.ceil(len / chunkLimit);
-
     res.status(200).send({
       words,
       historyUrl: [],
@@ -259,7 +257,6 @@ app.delete('/', (req, res, next) => {
       totalChunks: 1,
       errorMessage: ''
     });
-
     return next();
   });
 });
