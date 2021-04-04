@@ -146,12 +146,10 @@ app.post('/', upload.single('file'), (req, res, next) => {
  * @returns
  */
 app.get('/', upload.single('file'), (req, res, next) => {
-  // get initial url string and its words
-
   // database
   sql = `SELECT * FROM urlTable`;
 
-  db.all(sql, [], function (err, row) {
+  db.all(sql, [], (err, row) => {
     if (err) console.log('err', err);
     const historyUrl = Object.values(row);
     if (row.length < 1) {
@@ -192,7 +190,7 @@ app.get('/urlSelected', (req, res, next) => {
   let chunkRatio = 0;
 
   sql = `SELECT word, count FROM wordTable WHERE urlWordId='${urlId}'`;
-  db.all(sql, [], function (err, row) {
+  db.all(sql, [], (err, row) => {
     const len = row.length;
     chunkRatio = Math.ceil(len / chunkLimit);
     startPos = pageIndex * chunkLimit;
@@ -228,9 +226,9 @@ app.put('/', (req, res, next) => {
   const { query } = req;
   const { urlId, currentSelectedUrl } = query;
   sql = `UPDATE urlTable SET urlString='${currentSelectedUrl}' WHERE urlId = '${urlId}' `;
-  db.run(sql, [], function (error, row) {
+  db.run(sql, [], (error) => {
     console.log('put error', error);
-  }).all(`SELECT urlString FROM urlTable`, [], function (error, row) {
+  }).all(`SELECT urlString FROM urlTable`, [], (error, row) => {
     res.status(200).send({
       words: [],
       historyUrl: row,
@@ -253,21 +251,17 @@ app.delete('/', (req, res, next) => {
   const { query } = req;
   const { urlId } = query;
   sql = `DELETE FROM urlTable WHERE urlId= '${urlId}'`;
-  db.all(sql, [], function () {}).all(
-    `SELECT * FROM urlTable`,
-    [],
-    function (error, row) {
-      res.status(200).send({
-        words: [],
-        historyUrl: row,
-        currentSelectedUrl: '',
-        totalChunks: 1,
-        errorMessage: ''
-      });
+  db.all(sql, [], () => {}).all(`SELECT * FROM urlTable`, [], (error, row) => {
+    res.status(200).send({
+      words: [],
+      historyUrl: row,
+      currentSelectedUrl: '',
+      totalChunks: 1,
+      errorMessage: ''
+    });
 
-      return next();
-    }
-  );
+    return next();
+  });
 });
 
 module.exports = app;
