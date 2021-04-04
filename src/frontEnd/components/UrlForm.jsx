@@ -99,18 +99,14 @@ const UrlForm = () => {
     serverDataResponse,
     newPaginatorObject
   ) => {
-    // console.log('serverDataResponse', serverDataResponse);
     const newHistory = serverDataResponse.historyUrl.map((elem) => {
-      console.log('elem', elem);
       return { urlId: elem.urlId, urlString: elem.urlString };
     });
     newHistory.unshift({ urlId: 0, urlString: 'Select a Url' });
-    console.log('newHistory', newHistory);
     upatedWords(serverDataResponse.words);
     updateHistory(
       serverDataResponse.historyUrl.length < 1 ? historyUrl : newHistory
     );
-    console.log('currentSelectedUrl', serverDataResponse.currentSelectedUrl);
     setSelectedUrl(serverDataResponse.currentSelectedUrl);
     updateErrorMessage(serverDataResponse.errorMessage);
     updatePageIndex(serverDataResponse.totalChunks, newPaginatorObject);
@@ -127,7 +123,6 @@ const UrlForm = () => {
     //   'Content-Type': 'application/json'
     // }}
     const newUrl = serverUrl + url;
-    console.log('options', options, 'url', newUrl);
     fetch(newUrl, options)
       .then(
         (response) => response.json(),
@@ -152,12 +147,10 @@ const UrlForm = () => {
       });
   };
   const fetchPost = (body, PaginatorObject, url = '/') => {
-    console.log('body', body);
     const options = {
       method: 'POST',
       body
     };
-    console.log('url', url);
     urlRequest(options, url, PaginatorObject);
   };
   // form, newPaginatorObject, url;
@@ -242,7 +235,6 @@ const UrlForm = () => {
     };
 
     if (selectedValue === 'Select a Url') {
-      console.log('should return');
       return;
     }
 
@@ -276,13 +268,10 @@ const UrlForm = () => {
     };
 
     if (currentUrlNameToUpdate.length < 1) {
-      console.log('should return');
       return;
     }
-    console.log('currentSelectedUrl.urlId', currentSelectedUrl.urlId);
     updateLoadMessage(true);
     const url = `/?urlId=${currentSelectedUrl.urlId}&currentSelectedUrl=${currentUrlNameToUpdate}`;
-    console.log('url update', url);
     fetchUpdate('data', newPaginatorObject, url);
   };
 
@@ -300,7 +289,6 @@ const UrlForm = () => {
     };
 
     if (selectedValue === 'Select a Url') {
-      console.log('should return');
       return;
     }
     updateLoadMessage(true);
