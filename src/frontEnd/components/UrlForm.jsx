@@ -52,9 +52,15 @@ const UrlForm = () => {
    * @param {*} totalChunks
    * @param {*} newPaginatorObject
    */
-  const updatePageIndex = (totalChunks, newPaginatorObject) => {
+  const updatePageIndex = (
+    totalChunks,
+    newPaginatorObject = { leftIndex: -1, pageIndex: 0, rightIndex: 1 }
+  ) => {
     const newerPaginatorObject = {
       ...newPaginatorObject,
+      isLeftDisabled: true,
+      isMiddleDisabled: true,
+      isRightDisabled: true,
       totalChunks
     };
 
@@ -95,22 +101,9 @@ const UrlForm = () => {
    *
    * @return {*}
    */
-  const updateAllWordApplicationVariables = (
-    serverDataResponse,
-    newPaginatorObject
-  ) => {
-    const newHistory = serverDataResponse.historyUrl.map((elem) => {
-      return { urlId: elem.urlId, urlString: elem.urlString };
-    });
-    newHistory.unshift({ urlId: 0, urlString: 'Select a Url' });
-    upatedWords(serverDataResponse.words);
-    updateHistory(
-      serverDataResponse.historyUrl.length < 1 ? historyUrl : newHistory
-    );
-    setSelectedUrl(serverDataResponse.currentSelectedUrl);
-    updateErrorMessage(serverDataResponse.errorMessage);
-    updatePageIndex(serverDataResponse.totalChunks, newPaginatorObject);
+  const displayServerResponse = (serverDataResponse) => {
     updateLoadMessage(false);
+    updateErrorMessage(serverDataResponse.errorMessage);
   };
 
   /**
@@ -118,9 +111,9 @@ const UrlForm = () => {
    *
    * @param {*} form
    */
-  const fetchRequest = (options, url, newPaginatorObject = {}) => {
+  const fetchRequest = (options, url) => {
     const newUrl = serverUrl + url;
-    fetch(newUrl, options)
+    return fetch(newUrl, options)
       .then(
         (response) => response.json(),
         (error) => {
@@ -130,7 +123,7 @@ const UrlForm = () => {
       .then(
         (json) => {
           // update all variables
-          updateAllWordApplicationVariables(json, newPaginatorObject);
+          displayServerResponse(json);
           return json;
         },
         () => {
@@ -143,38 +136,55 @@ const UrlForm = () => {
         updateLoadMessage(false);
       });
   };
-  const fetchPost = (body, PaginatorObject, url = '/') => {
+
+  const fetchPost = (body, url = '/') => {
     const options = {
       method: 'POST',
       body
     };
-    fetchRequest(options, url, PaginatorObject);
+    return fetchRequest(options, url);
   };
-  const fetchGet = (data, PaginatorObject, url = '/') => {
+
+  const fetchGet = (data, url = '/') => {
     const options = {
       method: 'GET',
       data
     };
 
-    fetchRequest(options, url, PaginatorObject);
+    return fetchRequest(options, url);
   };
 
-  const fetchUpdate = (data, PaginatorObject, url = '/') => {
+  const fetchUpdate = (data, url = '/') => {
     const options = {
       method: 'PUT',
       data
     };
 
-    fetchRequest(options, url, PaginatorObject);
+    return fetchRequest(options, url);
   };
 
-  const fetchDelete = (data, PaginatorObject, url = '/') => {
+  const fetchDelete = (data, url = '/') => {
     const options = {
       method: 'DELETE',
       data
     };
 
-    fetchRequest(options, url, PaginatorObject);
+    return fetchRequest(options, url);
+  };
+
+  const updateForm = (serverDataResponse, newPaginatorObject) => {
+    // no destructure due initial state name conflicts
+    const newHistory = serverDataResponse.historyUrl.map((elem) => {
+      return { urlId: elem.urlId, urlString: elem.urlString };
+    });
+
+    newHistory.unshift({ urlId: 0, urlString: 'Select a Url' });
+    updateHistory(
+      serverDataResponse.historyUrl.length < 1 ? historyUrl : newHistory
+    );
+    upatedWords(serverDataResponse.words);
+    setSelectedUrl(serverDataResponse.currentSelectedUrl);
+    updatePageIndex(serverDataResponse.totalChunks, newPaginatorObject);
   };
 
   /**
@@ -182,21 +192,11 @@ const UrlForm = () => {
    *
    * @param {*} e
    */
-  const submit = (e) => {
+  const submit = async (e) => {
     // make the post request
     e.preventDefault();
     const form = new FormData();
     const url = urlText.current.value;
-    const { totalChunks } = paginatorObject;
-    const newPaginatorObject = {
-      leftIndex: -1,
-      pageIndex: 0,
-      rightIndex: 1,
-      isLeftDisabled: true,
-      isMiddleDisabled: true,
-      isRightDisabled: true,
-      totalChunks
-    };
 
     // assure that the user places in a text before submiting
     let urlString = null;
@@ -205,7 +205,9 @@ const UrlForm = () => {
     }
     form.append('urlText', urlString);
     updateLoadMessage(true);
-    fetchPost(form, newPaginatorObject);
+    const serverDataResponse = await fetchPost(form);
+
+    updateForm(serverDataResponse);
   };
 
   /**
@@ -214,33 +216,29 @@ const UrlForm = () => {
    *
    * @param {*} e
    */
-  const onChangeSelect = (e) => {
+  const onChangeSelect = async (e) => {
     e.preventDefault();
     const selectedValue = e.target.value;
-    const { totalChunks } = paginatorObject;
-    const newPaginatorObject = {
-      leftIndex: -1,
-      pageIndex: 0,
-      rightIndex: 1,
-      isLeftDisabled: true,
-      isMiddleDisabled: true,
-      isRightDisabled: true,
-      totalChunks
-    };
 
     if (selectedValue === 'Select a Url') {
       return;
     }
-
     updateLoadMessage(true);
-    setSelectedUrl(selectedValue);
-    const foundUrlStringObj = historyUrl.filter((url) => {
+    const foundUrlStringObj = historyUrl.find((url) => {
       if (url.urlString === selectedValue) return true;
       return false;
     });
     const form = { selectedValue, pageIndex: 0 };
-    const url = `/urlSelected/?selectedValue=${selectedValue}&urlId=${foundUrlStringObj[0].urlId}&pageIndex=0`;
-    fetchGet(form, newPaginatorObject, url);
+    const url = `/urlSelected/?selectedValue=${selectedValue}&urlId=${foundUrlStringObj.urlId}&pageIndex=0`;
+
+    const serverDataResponse = await fetchGet(form, url);
+
+    updateForm(serverDataResponse);
+  };
+
+  const getInitialFormData = async () => {
+    const serverDataResponse = await fetchGet({});
+    updateForm(serverDataResponse);
   };
 
   const updateCurrentUrlName = (e) => {
@@ -248,16 +246,11 @@ const UrlForm = () => {
     setUpdateCurrentUrlName(newUrlName);
   };
 
-  const updateUrl = () => {
-    const { totalChunks } = paginatorObject;
+  const updateUrl = async () => {
     const newPaginatorObject = {
       leftIndex: -1,
       pageIndex: 0,
-      rightIndex: 1,
-      isLeftDisabled: true,
-      isMiddleDisabled: true,
-      isRightDisabled: true,
-      totalChunks
+      rightIndex: 1
     };
 
     if (currentUrlNameToUpdate.length < 1) {
@@ -265,22 +258,13 @@ const UrlForm = () => {
     }
     updateLoadMessage(true);
     const url = `/?urlId=${currentSelectedUrl.urlId}&currentSelectedUrl=${currentUrlNameToUpdate}`;
-    fetchUpdate('data', newPaginatorObject, url);
+    const serverDataResponse = await fetchUpdate({}, url);
+
+    updateForm(serverDataResponse, newPaginatorObject);
   };
 
-  const deleteUrl = () => {
+  const deleteUrl = async () => {
     const selectedValue = currentSelectedUrl.urlString;
-    const { totalChunks } = paginatorObject;
-    const newPaginatorObject = {
-      leftIndex: -1,
-      pageIndex: 0,
-      rightIndex: 1,
-      isLeftDisabled: true,
-      isMiddleDisabled: true,
-      isRightDisabled: true,
-      totalChunks
-    };
-
     if (selectedValue === 'Select a Url') {
       return;
     }
@@ -289,7 +273,8 @@ const UrlForm = () => {
       (urlObj) => urlObj.urlString === selectedValue
     );
     const url = `/?urlId=${urlId.urlId}`;
-    fetchDelete('data', newPaginatorObject, url);
+    const serverDataResponse = await fetchDelete('data', url);
+    updateForm(serverDataResponse);
   };
 
   /**
@@ -319,7 +304,7 @@ const UrlForm = () => {
    */
   useEffect(() => {
     // delete initial data
-    fetchGet({}, paginatorObject);
+    getInitialFormData();
   }, []);
 
   /**
@@ -329,19 +314,19 @@ const UrlForm = () => {
    *
    * @return {*}
    */
-  const clickLeft = () => {
+  const clickLeft = async () => {
+    if (paginatorObject.leftIndex <= -1) return;
+
     const newPaginatorObject = {
-      ...paginatorObject
+      leftIndex: paginatorObject.leftIndex - 1,
+      pageIndex: paginatorObject.pageIndex - 1,
+      rightIndex: paginatorObject.rightIndex - 1
     };
 
-    if (newPaginatorObject.leftIndex <= -1) return;
-
-    newPaginatorObject.leftIndex -= 1;
-    newPaginatorObject.pageIndex -= 1;
-    newPaginatorObject.rightIndex -= 1;
-
     const url = `/urlSelected/?urlId=${currentSelectedUrl.urlId}&selectedValue=${currentSelectedUrl.urlString}&pageIndex=${newPaginatorObject.pageIndex}`;
-    fetchGet({}, newPaginatorObject, url);
+    const serverDataResponse = await fetchGet({}, url);
+
+    updateForm(serverDataResponse, newPaginatorObject);
   };
 
   /**
@@ -351,18 +336,19 @@ const UrlForm = () => {
    *
    * @return {*}
    */
-  const clickRight = () => {
-    const newPaginatorObject = {
-      ...paginatorObject
-    };
-    if (newPaginatorObject.rightIndex >= newPaginatorObject.totalChunks) return;
+  const clickRight = async () => {
+    if (paginatorObject.rightIndex >= paginatorObject.totalChunks) return;
 
-    newPaginatorObject.leftIndex += 1;
-    newPaginatorObject.pageIndex += 1;
-    newPaginatorObject.rightIndex += 1;
+    const newPaginatorObject = {
+      leftIndex: paginatorObject.leftIndex + 1,
+      pageIndex: paginatorObject.pageIndex + 1,
+      rightIndex: paginatorObject.rightIndex + 1
+    };
 
     const url = `/urlSelected/?urlId=${currentSelectedUrl.urlId}&selectedValue=${currentSelectedUrl.urlString}&pageIndex=${newPaginatorObject.pageIndex}`;
-    fetchGet({}, newPaginatorObject, url);
+    const serverDataResponse = await fetchGet({}, url);
+
+    updateForm(serverDataResponse, newPaginatorObject);
   };
 
   /**
@@ -371,20 +357,17 @@ const UrlForm = () => {
    * submits request of data based on the new
    * page index
    */
-  const goToTheBegining = () => {
-    const { totalChunks } = paginatorObject;
+  const goToTheBegining = async () => {
     const newPaginatorObject = {
       leftIndex: -1,
       pageIndex: 0,
-      rightIndex: 1,
-      isLeftDisabled: true,
-      isMiddleDisabled: true,
-      isRightDisabled: true,
-      totalChunks
+      rightIndex: 1
     };
 
     const url = `/urlSelected/?urlId=${currentSelectedUrl.urlId}&selectedValue=${currentSelectedUrl.urlString}&pageIndex=0`;
-    fetchGet({}, newPaginatorObject, url);
+    const serverDataResponse = await fetchGet({}, url);
+
+    updateForm(serverDataResponse, newPaginatorObject);
   };
 
   /**
@@ -394,20 +377,17 @@ const UrlForm = () => {
    * page index
    *
    */
-  const goToTheEnd = () => {
-    const { totalChunks } = paginatorObject;
+  const goToTheEnd = async () => {
     const newPaginatorObject = {
       leftIndex: paginatorObject.totalChunks - 2,
       pageIndex: paginatorObject.totalChunks - 1,
-      rightIndex: paginatorObject.totalChunks,
-      isLeftDisabled: true,
-      isMiddleDisabled: true,
-      isRightDisabled: true,
-      totalChunks
+      rightIndex: paginatorObject.totalChunks
     };
 
     const url = `/urlSelected/?urlId=${currentSelectedUrl.urlId}&selectedValue=${currentSelectedUrl.urlString}&pageIndex=${newPaginatorObject.pageIndex}`;
-    fetchGet({}, newPaginatorObject, url);
+    const serverDataResponse = await fetchGet({}, url);
+
+    updateForm(serverDataResponse, newPaginatorObject);
   };
   // helps prevent the user requesting multiple
   // click before receiving the servers data

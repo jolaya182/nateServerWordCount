@@ -92,14 +92,14 @@ app.post('/', upload.single('file'), (req, res, next) => {
     // database
     db.serialize(() => {
       sql = `INSERT INTO urlTable ( urlString, totalWords) VALUES('${urlText}', '${wordMap.size}')`;
-      let currentId = 0;
+      let urlId = 0;
       // eslint-disable-next-line func-names
       db.run(sql, [], function (er) {
         if (er) {
           console.log('err', er);
         }
 
-        currentId = this.lastID;
+        urlId = this.lastID;
         // json set the the count table in an array
         const uniqueWords = [];
         let wordChunk = [];
@@ -117,7 +117,7 @@ app.post('/', upload.single('file'), (req, res, next) => {
             wordChunk.push({ word, count });
           }
           wordIndex += 1;
-          stmt.run(currentId, word, count);
+          stmt.run(urlId, word, count);
         });
         if (wordChunk.length > 0) uniqueWords.push(wordChunk);
 
@@ -128,7 +128,7 @@ app.post('/', upload.single('file'), (req, res, next) => {
           res.status(200).send({
             words: uniqueWords[0],
             historyUrl: row,
-            currentSelectedUrl: urlText,
+            currentSelectedUrl: { urlId, urlString: urlText },
             errorMessage: '',
             totalChunks: newChunkSize
           });
@@ -224,18 +224,21 @@ app.put('/', (req, res, next) => {
   const { query } = req;
   const { urlId, currentSelectedUrl } = query;
   sql = `UPDATE urlTable SET urlString='${currentSelectedUrl}' WHERE urlId = '${urlId}' `;
-  db.run(sql, [], (error) => {
-    console.log('put error', error);
-  }).all(`SELECT urlString FROM urlTable`, [], (error, row) => {
-    res.status(200).send({
-      words: [],
-      historyUrl: row,
-      currentSelectedUrl,
-      totalChunks: 0,
-      errorMessage: ''
+  db.serialize(() => {
+    db.run(sql, [], (error) => {
+      if (error) console.log('put error', error);
     });
+    db.all(`SELECT urlId, urlString FROM urlTable`, [], (error, row) => {
+      res.status(200).send({
+        words: [],
+        historyUrl: row,
+        currentSelectedUrl: { urlId, urlString: 'Select a Url' },
+        totalChunks: 0,
+        errorMessage: ''
+      });
 
-    return next();
+      return next();
+    });
   });
 });
 
@@ -253,7 +256,7 @@ app.delete('/', (req, res, next) => {
     res.status(200).send({
       words: [],
       historyUrl: row,
-      currentSelectedUrl: '',
+      currentSelectedUrl: { urlId: '', urlString: '' },
       totalChunks: 1,
       errorMessage: ''
     });
