@@ -19,27 +19,9 @@ import Paginator from './Paginator';
 import WordList from './WordList';
 
 const WordTable = (props) => {
-  const {
-    goToTheBegining,
-    paginatorObject,
-    clickLeft,
-    clickRight,
-    goToTheEnd,
-    loadingMessage,
-    words
-  } = props;
+  const { loadingMessage, words } = props;
   return (
     <ListGroup>
-      <Row>
-        <Paginator
-          goToTheBegining={goToTheBegining}
-          paginatorObject={paginatorObject}
-          clickLeft={clickLeft}
-          clickRight={clickRight}
-          goToTheEnd={goToTheEnd}
-          words={words}
-        />
-      </Row>
       <ListGroup.Item variant="primary">
         {loadingMessage ? (
           <Row>

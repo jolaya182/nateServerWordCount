@@ -50,9 +50,10 @@ app.use(express.json());
  * @returns
  */
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
-  res.header('Access-Control-Allow-Methods', 'DELETE, GET, POST, PUT, OPTIONS');
+  res.header('Content-Type', 'application/json; charset=utf-8');
   res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'DELETE, GET, POST, PUT, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
   next();
 });
 
@@ -145,7 +146,8 @@ app.post('/', upload.single('file'), (req, res, next) => {
  * @param {*} { req, res, next}
  * @returns
  */
-app.get('/', upload.single('file'), (req, res, next) => {
+app.get('/', (req, res, next) => {
+  // console.log('req.data', req);
   sql = `SELECT * FROM urlTable`;
 
   db.all(sql, [], (err, row) => {

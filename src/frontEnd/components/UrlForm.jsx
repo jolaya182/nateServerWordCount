@@ -10,7 +10,7 @@
  */
 import React, { useState, useRef, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.css';
-
+import Row from 'react-bootstrap/Row';
 import Paginator from './Paginator';
 import NateForm from './NateForm';
 import WordTable from './WordTable';
@@ -148,7 +148,7 @@ const UrlForm = () => {
   const fetchGet = (data, url = '/') => {
     const options = {
       method: 'GET',
-      data
+      headers: { 'Content-Type': 'application/json; charset=utf-8' }
     };
 
     return fetchRequest(options, url);
@@ -170,6 +170,16 @@ const UrlForm = () => {
     };
 
     return fetchRequest(options, url);
+  };
+
+  const stringBuilder = (objectToEncode, url) => {
+    const esc = encodeURIComponent;
+    const encodedString = Object.keys(objectToEncode)
+      .map((key) => {
+        return `${key}=${esc(objectToEncode[key])}`;
+      })
+      .join('&');
+    return `${url}/?${encodedString}`;
   };
 
   const updateForm = (serverDataResponse, newPaginatorObject) => {
@@ -228,16 +238,20 @@ const UrlForm = () => {
       if (url.urlString === selectedValue) return true;
       return false;
     });
-    const form = { selectedValue, pageIndex: 0 };
-    const url = `/urlSelected/?selectedValue=${selectedValue}&urlId=${foundUrlStringObj.urlId}&pageIndex=0`;
-
-    const serverDataResponse = await fetchGet(form, url);
+    const variablesToBeEncoded = {
+      selectedValue,
+      urlId: foundUrlStringObj.urlId,
+      pageIndex: 0
+    };
+    // const url = `/urlSelected/?selectedValue=${selectedValue}&urlId=${foundUrlStringObj.urlId}&pageIndex=0`;
+    const url = stringBuilder(variablesToBeEncoded, '/urlSelected');
+    const serverDataResponse = await fetchGet({}, url);
 
     updateForm(serverDataResponse);
   };
 
   const getInitialFormData = async () => {
-    const serverDataResponse = await fetchGet({});
+    const serverDataResponse = await fetchGet();
     updateForm(serverDataResponse);
   };
 
@@ -323,7 +337,13 @@ const UrlForm = () => {
       rightIndex: paginatorObject.rightIndex - 1
     };
 
-    const url = `/urlSelected/?urlId=${currentSelectedUrl.urlId}&selectedValue=${currentSelectedUrl.urlString}&pageIndex=${newPaginatorObject.pageIndex}`;
+    const variablesToBeEncoded = {
+      urlId: currentSelectedUrl.urlId,
+      selectedValue: currentSelectedUrl.urlString,
+      pageIndex: newPaginatorObject.pageIndex
+    };
+
+    const url = stringBuilder(variablesToBeEncoded, '/urlSelected');
     const serverDataResponse = await fetchGet({}, url);
 
     updateForm(serverDataResponse, newPaginatorObject);
@@ -345,7 +365,13 @@ const UrlForm = () => {
       rightIndex: paginatorObject.rightIndex + 1
     };
 
-    const url = `/urlSelected/?urlId=${currentSelectedUrl.urlId}&selectedValue=${currentSelectedUrl.urlString}&pageIndex=${newPaginatorObject.pageIndex}`;
+    const variablesToBeEncoded = {
+      urlId: currentSelectedUrl.urlId,
+      selectedValue: currentSelectedUrl.urlString,
+      pageIndex: newPaginatorObject.pageIndex
+    };
+
+    const url = stringBuilder(variablesToBeEncoded, '/urlSelected');
     const serverDataResponse = await fetchGet({}, url);
 
     updateForm(serverDataResponse, newPaginatorObject);
@@ -364,7 +390,13 @@ const UrlForm = () => {
       rightIndex: 1
     };
 
-    const url = `/urlSelected/?urlId=${currentSelectedUrl.urlId}&selectedValue=${currentSelectedUrl.urlString}&pageIndex=0`;
+    const variablesToBeEncoded = {
+      urlId: currentSelectedUrl.urlId,
+      selectedValue: currentSelectedUrl.urlString,
+      pageIndex: 0
+    };
+
+    const url = stringBuilder(variablesToBeEncoded, '/urlSelected');
     const serverDataResponse = await fetchGet({}, url);
 
     updateForm(serverDataResponse, newPaginatorObject);
@@ -384,7 +416,13 @@ const UrlForm = () => {
       rightIndex: paginatorObject.totalChunks
     };
 
-    const url = `/urlSelected/?urlId=${currentSelectedUrl.urlId}&selectedValue=${currentSelectedUrl.urlString}&pageIndex=${newPaginatorObject.pageIndex}`;
+    const variablesToBeEncoded = {
+      urlId: currentSelectedUrl.urlId,
+      selectedValue: currentSelectedUrl.urlString,
+      pageIndex: newPaginatorObject.pageIndex
+    };
+
+    const url = stringBuilder(variablesToBeEncoded, '/urlSelected');
     const serverDataResponse = await fetchGet({}, url);
 
     updateForm(serverDataResponse, newPaginatorObject);
@@ -406,24 +444,16 @@ const UrlForm = () => {
         updateCurrentUrlName={updateCurrentUrlName}
       />
       <div id="errorMessage">{errorMessage}</div>
-
-      <WordTable
-        goToTheBegining={goToTheBegining}
-        paginatorObject={paginatorObject}
-        clickLeft={clickLeft}
-        clickRight={clickRight}
-        goToTheEnd={goToTheEnd}
-        loadingMessage={loadingMessage}
-        words={words}
-      />
-
-      <Paginator
-        goToTheBegining={goToTheBegining}
-        paginatorObject={paginatorObject}
-        clickLeft={clickLeft}
-        clickRight={clickRight}
-        goToTheEnd={goToTheEnd}
-      />
+      <Row>
+        <Paginator
+          goToTheBegining={goToTheBegining}
+          paginatorObject={paginatorObject}
+          clickLeft={clickLeft}
+          clickRight={clickRight}
+          goToTheEnd={goToTheEnd}
+        />
+      </Row>
+      <WordTable loadingMessage={loadingMessage} words={words} />
     </div>
   );
 };
