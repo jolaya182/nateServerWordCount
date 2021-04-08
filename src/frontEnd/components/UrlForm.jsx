@@ -15,6 +15,7 @@ import Paginator from './Paginator';
 import NateForm from './NateForm';
 import WordTable from './WordTable';
 import serverUrl from './utilComponentData/constants';
+import { stringBuilder } from '../utils/utlilFunctions';
 import '../css/index.css';
 
 /**
@@ -24,14 +25,6 @@ import '../css/index.css';
  * @return {Html element}
  */
 const UrlForm = () => {
-  const [words, upatedWords] = useState([]);
-  const [historyUrl, updateHistory] = useState(['Select a Url']);
-  const [currentSelectedUrl, setSelectedUrl] = useState({
-    urlString: '',
-    urlId: 0
-  });
-  const [currentUrlNameToUpdate, setUpdateCurrentUrlName] = useState('');
-  const [errorMessage, updateErrorMessage] = useState('');
   const [paginatorObject, updatePaginator] = useState({
     leftIndex: -1,
     isLeftDisabled: true,
@@ -41,8 +34,121 @@ const UrlForm = () => {
     isRightDisabled: true,
     totalChunks: 0
   });
+  const [words, upatedWords] = useState([]);
+  const [historyUrl, updateHistory] = useState(['Select a Url']);
+  const [currentSelectedUrl, setSelectedUrl] = useState({
+    urlString: '',
+    urlId: 0
+  });
+  const [currentUrlNameToUpdate, setUpdateCurrentUrlName] = useState('');
+  const [errorMessage, updateErrorMessage] = useState('');
   const [loadingMessage, updateLoadMessage] = useState(false);
   const urlText = useRef(null);
+
+  /**
+   * updates the application variables that need are
+   * dependant on the server's response
+   *
+   * @return {*}
+   */
+  const displayServerResponse = (serverDataResponse) => {
+    updateLoadMessage(false);
+    updateErrorMessage(serverDataResponse.errorMessage);
+  };
+
+  /**
+   *  does a post request with a formdata object
+   *
+   * @param {*} form
+   */
+  const fetchRequest = (options, url) => {
+    const newUrl = serverUrl + url;
+    return fetch(newUrl, options)
+      .then(
+        (response) => response.json(),
+        (error) => {
+          updateErrorMessage(error.message);
+        }
+      )
+      .then(
+        (json) => {
+          // update all variables
+          displayServerResponse(json);
+          return json;
+        },
+        () => {
+          updateErrorMessage('please type in a legit url');
+          updateLoadMessage(false);
+        }
+      )
+      .catch((error) => {
+        updateErrorMessage(error.message);
+        updateLoadMessage(false);
+      });
+  };
+
+  /**
+   *
+   *
+   * @param {obj} body
+   * @param {string} [url='/']
+   * @return {obj}
+   */
+  const fetchPost = (body, url = '/') => {
+    const options = {
+      method: 'POST',
+      body
+    };
+    return fetchRequest(options, url);
+  };
+
+  /**
+   *
+   *
+   * @param {obj} data
+   * @param {string} [url='/']
+   * @return {obj}
+   */
+  const fetchGet = (data, url = '/') => {
+    const options = {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json; charset=utf-8' }
+    };
+
+    return fetchRequest(options, url);
+  };
+
+  /**
+   *
+   *
+   * @param {obj} data
+   * @param {string} [url='/']
+   * @return {obj}
+   */
+  const fetchUpdate = (data, url = '/') => {
+    const options = {
+      method: 'PUT',
+      data
+    };
+
+    return fetchRequest(options, url);
+  };
+
+  /**
+   *
+   *
+   * @param {obj} data
+   * @param {string} [url='/']
+   * @return {obj}
+   */
+  const fetchDelete = (data, url = '/') => {
+    const options = {
+      method: 'DELETE',
+      data
+    };
+
+    return fetchRequest(options, url);
+  };
 
   /**
    * using the number totalchunks and the
@@ -96,92 +202,13 @@ const UrlForm = () => {
   };
 
   /**
-   * updates the application variables that need are
-   * dependant on the server's response
+   * processes the response object and updates the
+   * state variables, newHistory, Words, currentSelectedUrl,
+   * paginator
    *
-   * @return {*}
+   * @param {obj} serverDataResponse
+   * @param {obj} newPaginatorObject
    */
-  const displayServerResponse = (serverDataResponse) => {
-    updateLoadMessage(false);
-    updateErrorMessage(serverDataResponse.errorMessage);
-  };
-
-  /**
-   *  does a post request with a formdata object
-   *
-   * @param {*} form
-   */
-  const fetchRequest = (options, url) => {
-    const newUrl = serverUrl + url;
-    return fetch(newUrl, options)
-      .then(
-        (response) => response.json(),
-        (error) => {
-          updateErrorMessage(error.message);
-        }
-      )
-      .then(
-        (json) => {
-          // update all variables
-          displayServerResponse(json);
-          return json;
-        },
-        () => {
-          updateErrorMessage('please type in a legit url');
-          updateLoadMessage(false);
-        }
-      )
-      .catch((error) => {
-        updateErrorMessage(error.message);
-        updateLoadMessage(false);
-      });
-  };
-
-  const fetchPost = (body, url = '/') => {
-    const options = {
-      method: 'POST',
-      body
-    };
-    return fetchRequest(options, url);
-  };
-
-  const fetchGet = (data, url = '/') => {
-    const options = {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json; charset=utf-8' }
-    };
-
-    return fetchRequest(options, url);
-  };
-
-  const fetchUpdate = (data, url = '/') => {
-    const options = {
-      method: 'PUT',
-      data
-    };
-
-    return fetchRequest(options, url);
-  };
-
-  const fetchDelete = (data, url = '/') => {
-    const options = {
-      method: 'DELETE',
-      data
-    };
-
-    return fetchRequest(options, url);
-  };
-
-  const stringBuilder = (objectToEncode, url) => {
-    const esc = encodeURIComponent;
-    const encodedString = Object.keys(objectToEncode)
-      .map((key) => {
-        return `${key}=${esc(objectToEncode[key])}`;
-      })
-      .join('&');
-    return `${url}/?${encodedString}`;
-  };
-
   const updateForm = (serverDataResponse, newPaginatorObject) => {
     // no destructure due initial state name conflicts
     const newHistory = serverDataResponse.historyUrl.map((elem) => {
@@ -200,7 +227,7 @@ const UrlForm = () => {
   /**
    *  submits a url search from the input form
    *
-   * @param {*} e
+   * @param {event} e
    */
   const submit = async (e) => {
     // make the post request
@@ -224,7 +251,7 @@ const UrlForm = () => {
    *  updates  the message and the fetches the word count
    *  based on the url selected
    *
-   * @param {*} e
+   * @param {event} e
    */
   const onChangeSelect = async (e) => {
     e.preventDefault();
@@ -250,16 +277,29 @@ const UrlForm = () => {
     updateForm(serverDataResponse);
   };
 
+  /**
+   * Gets all the urls
+   *
+   */
   const getInitialFormData = async () => {
     const serverDataResponse = await fetchGet();
     updateForm(serverDataResponse);
   };
 
+  /**
+   * updates the currentSelected url
+   *
+   * @param {event} e
+   */
   const updateCurrentUrlName = (e) => {
     const newUrlName = e.target.value;
     setUpdateCurrentUrlName(newUrlName);
   };
 
+  /**
+   * changes the name of the current url
+   *
+   */
   const updateUrl = async () => {
     const newPaginatorObject = {
       leftIndex: -1,
@@ -277,6 +317,10 @@ const UrlForm = () => {
     updateForm(serverDataResponse, newPaginatorObject);
   };
 
+  /**
+   * Removes the url from the database
+   *
+   */
   const deleteUrl = async () => {
     const selectedValue = currentSelectedUrl.urlString;
     if (selectedValue === 'Select a Url') {
@@ -292,26 +336,6 @@ const UrlForm = () => {
   };
 
   /**
-   *function that avoids triggering other functions to quickly
-   *
-   * @param {*} func
-   * @param {*} delay
-   * @return {*}
-   */
-  const debounce = (func, delay) => {
-    let timeout;
-    return function funExecuted(...args) {
-      const later = () => {
-        timeout = null;
-        func(...args);
-      };
-      // reset the clock after every click
-      clearTimeout(timeout);
-      timeout = setTimeout(later, delay);
-    };
-  };
-
-  /**
    *  retrieve the initial data that may be stored on the server
    *
    * @return {*}
@@ -322,11 +346,34 @@ const UrlForm = () => {
   }, []);
 
   /**
+   * moves the paginator's position
+   * to the beginning  of the pagination bar and
+   * submits request of data based on the new
+   * page index
+   */
+  const goToTheBegining = async () => {
+    const newPaginatorObject = {
+      leftIndex: -1,
+      pageIndex: 0,
+      rightIndex: 1
+    };
+    const variablesToBeEncoded = {
+      urlId: currentSelectedUrl.urlId,
+      selectedValue: currentSelectedUrl.urlString,
+      pageIndex: 0
+    };
+
+    const url = stringBuilder(variablesToBeEncoded, '/urlSelected');
+    const serverDataResponse = await fetchGet({}, url);
+
+    updateForm(serverDataResponse, newPaginatorObject);
+  };
+
+  /**
    * updates the paginiator's positions
    * and requests for more words according the
    * new positions
    *
-   * @return {*}
    */
   const clickLeft = async () => {
     if (paginatorObject.leftIndex <= -1) return;
@@ -346,7 +393,7 @@ const UrlForm = () => {
     const url = stringBuilder(variablesToBeEncoded, '/urlSelected');
     const serverDataResponse = await fetchGet({}, url);
 
-    updateForm(serverDataResponse, newPaginatorObject);
+    updatePageIndex(serverDataResponse.totalChunks, newPaginatorObject);
   };
 
   /**
@@ -354,7 +401,6 @@ const UrlForm = () => {
    * index to the right and submits a data request
    * based on the new page index
    *
-   * @return {*}
    */
   const clickRight = async () => {
     if (paginatorObject.rightIndex >= paginatorObject.totalChunks) return;
@@ -369,31 +415,6 @@ const UrlForm = () => {
       urlId: currentSelectedUrl.urlId,
       selectedValue: currentSelectedUrl.urlString,
       pageIndex: newPaginatorObject.pageIndex
-    };
-
-    const url = stringBuilder(variablesToBeEncoded, '/urlSelected');
-    const serverDataResponse = await fetchGet({}, url);
-
-    updateForm(serverDataResponse, newPaginatorObject);
-  };
-
-  /**
-   * moves the paginator's position
-   * to the beginning  of the pagination bar and
-   * submits request of data based on the new
-   * page index
-   */
-  const goToTheBegining = async () => {
-    const newPaginatorObject = {
-      leftIndex: -1,
-      pageIndex: 0,
-      rightIndex: 1
-    };
-
-    const variablesToBeEncoded = {
-      urlId: currentSelectedUrl.urlId,
-      selectedValue: currentSelectedUrl.urlString,
-      pageIndex: 0
     };
 
     const url = stringBuilder(variablesToBeEncoded, '/urlSelected');
@@ -427,9 +448,6 @@ const UrlForm = () => {
 
     updateForm(serverDataResponse, newPaginatorObject);
   };
-  // helps prevent the user requesting multiple
-  // click before receiving the servers data
-  debounce(submit, 1200);
 
   return (
     <div className="mainContainer">
@@ -447,10 +465,10 @@ const UrlForm = () => {
       <Row>
         <Paginator
           goToTheBegining={goToTheBegining}
-          paginatorObject={paginatorObject}
           clickLeft={clickLeft}
           clickRight={clickRight}
           goToTheEnd={goToTheEnd}
+          paginatorObject={paginatorObject}
         />
       </Row>
       <WordTable loadingMessage={loadingMessage} words={words} />

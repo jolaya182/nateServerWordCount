@@ -15,7 +15,6 @@ import 'bootstrap/dist/css/bootstrap.css';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import { ListGroup } from 'react-bootstrap';
-import Paginator from './Paginator';
 import WordList from './WordList';
 
 const WordTable = (props) => {

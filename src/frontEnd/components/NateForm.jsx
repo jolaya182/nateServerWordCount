@@ -28,6 +28,19 @@ const NateForm = (props) => {
     updateUrl,
     updateCurrentUrlName
   } = props;
+
+  const sub = () => {
+    submit();
+  };
+
+  const UrlDelete = () => {
+    deleteUrl();
+  };
+
+  const urlUpdate = () => {
+    updateUrl();
+  };
+
   return (
     <Form.Group id="nateForm" encType="multipart/form-data">
       <Row>
@@ -40,7 +53,7 @@ const NateForm = (props) => {
           />
         </Col>
         <Col>
-          <Button type="button" onClick={submit} id="submit">
+          <Button type="button" onClick={sub} id="submit">
             Submit
           </Button>
         </Col>
@@ -60,7 +73,7 @@ const NateForm = (props) => {
           </Form.Control>
         </Col>
         <Col>
-          <Button type="button" onClick={deleteUrl} id="delete">
+          <Button type="button" onClick={UrlDelete} id="delete">
             Delete
           </Button>
         </Col>
@@ -75,7 +88,7 @@ const NateForm = (props) => {
           />
         </Col>
         <Col>
-          <Button type="button" onClick={updateUrl} id="submit">
+          <Button type="button" onClick={urlUpdate} id="submit">
             Update
           </Button>
         </Col>

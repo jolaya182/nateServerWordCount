@@ -17,21 +17,33 @@ import Pagination from 'react-bootstrap/Pagination';
 
 import '../css/index.css';
 
-const Paginator = (props) => {
-  const {
-    goToTheBegining,
-    paginatorObject,
-    clickLeft,
-    clickRight,
-    goToTheEnd
-  } = props;
+const Paginator = ({
+  goToTheBegining,
+  clickLeft,
+  clickRight,
+  goToTheEnd,
+  paginatorObject
+}) => {
+  const toTheBegining = () => {
+    goToTheBegining();
+  };
+  const toTheEnd = () => {
+    goToTheEnd();
+  };
+  const clickR = () => {
+    clickRight();
+  };
+  const clickL = () => {
+    clickLeft();
+  };
+
   return (
     <Row>
       <Col>
         <div className="pagination1">
           <Pagination>
             <Pagination.First
-              onClick={goToTheBegining}
+              onClick={toTheBegining}
               disabled={paginatorObject.isLeftDisabled}
             />
 
@@ -39,7 +51,7 @@ const Paginator = (props) => {
               ''
             ) : (
               <Pagination.Item
-                onClick={clickLeft}
+                onClick={clickL}
                 disabled={paginatorObject.isLeftDisabled}
               >
                 {paginatorObject.leftIndex + 1}
@@ -61,7 +73,7 @@ const Paginator = (props) => {
               ''
             ) : (
               <Pagination.Item
-                onClick={clickRight}
+                onClick={clickR}
                 disabled={paginatorObject.isRightDisabled}
               >
                 {paginatorObject.rightIndex + 1}
@@ -69,7 +81,7 @@ const Paginator = (props) => {
             )}
 
             <Pagination.Last
-              onClick={goToTheEnd}
+              onClick={toTheEnd}
               disabled={paginatorObject.isRightDisabled}
             />
           </Pagination>

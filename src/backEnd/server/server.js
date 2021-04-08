@@ -147,7 +147,6 @@ app.post('/', upload.single('file'), (req, res, next) => {
  * @returns
  */
 app.get('/', (req, res, next) => {
-  // console.log('req.data', req);
   sql = `SELECT * FROM urlTable`;
 
   db.all(sql, [], (err, row) => {
