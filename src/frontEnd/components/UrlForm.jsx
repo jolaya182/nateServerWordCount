@@ -8,12 +8,14 @@
  *
  * description: this file handles all the form submission and words rendering
  */
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useReducer } from 'react';
 import 'bootstrap/dist/css/bootstrap.css';
 import Row from 'react-bootstrap/Row';
 import Paginator from './Paginator';
 import NateForm from './NateForm';
 import WordTable from './WordTable';
+import appReducer from '../reducers/appReducer';
+import StateContext from '../utils/contexts';
 import serverUrl from './utilComponentData/constants';
 import { stringBuilder } from '../utils/utlilFunctions';
 import '../css/index.css';
@@ -25,21 +27,27 @@ import '../css/index.css';
  * @return {Html element}
  */
 const UrlForm = () => {
-  const [paginatorObject, updatePaginator] = useState({
-    leftIndex: -1,
-    isLeftDisabled: true,
-    pageIndex: 0,
-    isMiddleDisabled: true,
-    rightIndex: 1,
-    isRightDisabled: true,
-    totalChunks: 0
+  const [state, dispatch] = useReducer(appReducer, {
+    message: {},
+    formObjectData: {
+      words: [],
+      paginatorObject: {
+        leftIndex: -1,
+        isLeftDisabled: true,
+        pageIndex: 0,
+        isMiddleDisabled: true,
+        rightIndex: 1,
+        isRightDisabled: true,
+        totalChunks: 0
+      },
+      historyUrl: ['Select a Url'],
+      currentSelectedUrl: {
+        urlString: '',
+        urlId: 0
+      }
+    }
   });
-  const [words, upatedWords] = useState([]);
-  const [historyUrl, updateHistory] = useState(['Select a Url']);
-  const [currentSelectedUrl, setSelectedUrl] = useState({
-    urlString: '',
-    urlId: 0
-  });
+
   const [currentUrlNameToUpdate, setUpdateCurrentUrlName] = useState('');
   const [errorMessage, updateErrorMessage] = useState('');
   const [loadingMessage, updateLoadMessage] = useState(false);
@@ -151,80 +159,6 @@ const UrlForm = () => {
   };
 
   /**
-   * using the number totalchunks and the
-   * newpaginators position, this function determines
-   * which positions are disabled and enabled
-   *
-   * @param {*} totalChunks
-   * @param {*} newPaginatorObject
-   */
-  const updatePageIndex = (
-    totalChunks,
-    newPaginatorObject = { leftIndex: -1, pageIndex: 0, rightIndex: 1 }
-  ) => {
-    const newerPaginatorObject = {
-      ...newPaginatorObject,
-      isLeftDisabled: true,
-      isMiddleDisabled: true,
-      isRightDisabled: true,
-      totalChunks
-    };
-
-    // initial to paginator in the begining
-    if (totalChunks < 0) {
-      newerPaginatorObject.isLeftDisabled = true;
-      newerPaginatorObject.isMiddleDisabled = true;
-      newerPaginatorObject.isRightDisabled = true;
-    } else if (totalChunks === 1) {
-      newerPaginatorObject.isLeftDisabled = true;
-      newerPaginatorObject.isMiddleDisabled = false;
-      newerPaginatorObject.isRightDisabled = true;
-    } else if (totalChunks >= 2) {
-      newerPaginatorObject.isLeftDisabled = true;
-      newerPaginatorObject.isMiddleDisabled = false;
-      newerPaginatorObject.isRightDisabled = false;
-    }
-
-    // readjust to the indices if they have moved more than three spaces
-    if (newerPaginatorObject.leftIndex <= -1) {
-      newerPaginatorObject.isLeftDisabled = true;
-    } else {
-      newerPaginatorObject.isLeftDisabled = false;
-    }
-
-    if (newerPaginatorObject.rightIndex >= totalChunks) {
-      newerPaginatorObject.isRightDisabled = true;
-    } else {
-      newerPaginatorObject.isRightDisabled = false;
-    }
-
-    updatePaginator(newerPaginatorObject);
-  };
-
-  /**
-   * processes the response object and updates the
-   * state variables, newHistory, Words, currentSelectedUrl,
-   * paginator
-   *
-   * @param {obj} serverDataResponse
-   * @param {obj} newPaginatorObject
-   */
-  const updateForm = (serverDataResponse, newPaginatorObject) => {
-    // no destructure due initial state name conflicts
-    const newHistory = serverDataResponse.historyUrl.map((elem) => {
-      return { urlId: elem.urlId, urlString: elem.urlString };
-    });
-
-    newHistory.unshift({ urlId: 0, urlString: 'Select a Url' });
-    updateHistory(
-      serverDataResponse.historyUrl.length < 1 ? historyUrl : newHistory
-    );
-    upatedWords(serverDataResponse.words);
-    setSelectedUrl(serverDataResponse.currentSelectedUrl);
-    updatePageIndex(serverDataResponse.totalChunks, newPaginatorObject);
-  };
-
-  /**
    *  submits a url search from the input form
    *
    * @param {event} e
@@ -243,8 +177,7 @@ const UrlForm = () => {
     form.append('urlText', urlString);
     updateLoadMessage(true);
     const serverDataResponse = await fetchPost(form);
-
-    updateForm(serverDataResponse);
+    dispatch({ type: 'RETRIEVE_FORM_OBJECT_DATA', serverDataResponse });
   };
 
   /**
@@ -261,6 +194,7 @@ const UrlForm = () => {
       return;
     }
     updateLoadMessage(true);
+    const { historyUrl } = state.formObjectData;
     const foundUrlStringObj = historyUrl.find((url) => {
       if (url.urlString === selectedValue) return true;
       return false;
@@ -270,11 +204,12 @@ const UrlForm = () => {
       urlId: foundUrlStringObj.urlId,
       pageIndex: 0
     };
-    // const url = `/urlSelected/?selectedValue=${selectedValue}&urlId=${foundUrlStringObj.urlId}&pageIndex=0`;
     const url = stringBuilder(variablesToBeEncoded, '/urlSelected');
     const serverDataResponse = await fetchGet({}, url);
-
-    updateForm(serverDataResponse);
+    dispatch({
+      type: 'RETRIEVE_FORM_OBJECT_DATA',
+      serverDataResponse
+    });
   };
 
   /**
@@ -283,7 +218,7 @@ const UrlForm = () => {
    */
   const getInitialFormData = async () => {
     const serverDataResponse = await fetchGet();
-    updateForm(serverDataResponse);
+    dispatch({ type: 'RETRIEVE_FORM_OBJECT_DATA', serverDataResponse });
   };
 
   /**
@@ -301,20 +236,15 @@ const UrlForm = () => {
    *
    */
   const updateUrl = async () => {
-    const newPaginatorObject = {
-      leftIndex: -1,
-      pageIndex: 0,
-      rightIndex: 1
-    };
-
     if (currentUrlNameToUpdate.length < 1) {
       return;
     }
+    const { currentSelectedUrl } = state.formObjectData;
     updateLoadMessage(true);
     const url = `/?urlId=${currentSelectedUrl.urlId}&currentSelectedUrl=${currentUrlNameToUpdate}`;
     const serverDataResponse = await fetchUpdate({}, url);
 
-    updateForm(serverDataResponse, newPaginatorObject);
+    dispatch({ type: 'RETRIEVE_FORM_OBJECT_DATA', serverDataResponse });
   };
 
   /**
@@ -322,6 +252,8 @@ const UrlForm = () => {
    *
    */
   const deleteUrl = async () => {
+    const { currentSelectedUrl, historyUrl } = state.formObjectData;
+
     const selectedValue = currentSelectedUrl.urlString;
     if (selectedValue === 'Select a Url') {
       return;
@@ -332,13 +264,12 @@ const UrlForm = () => {
     );
     const url = `/?urlId=${urlId.urlId}`;
     const serverDataResponse = await fetchDelete('data', url);
-    updateForm(serverDataResponse);
+    dispatch({ type: 'RETRIEVE_FORM_OBJECT_DATA', serverDataResponse });
   };
 
   /**
    *  retrieve the initial data that may be stored on the server
    *
-   * @return {*}
    */
   useEffect(() => {
     // delete initial data
@@ -352,11 +283,7 @@ const UrlForm = () => {
    * page index
    */
   const goToTheBegining = async () => {
-    const newPaginatorObject = {
-      leftIndex: -1,
-      pageIndex: 0,
-      rightIndex: 1
-    };
+    const { currentSelectedUrl, paginatorObject } = state.formObjectData;
     const variablesToBeEncoded = {
       urlId: currentSelectedUrl.urlId,
       selectedValue: currentSelectedUrl.urlString,
@@ -366,7 +293,11 @@ const UrlForm = () => {
     const url = stringBuilder(variablesToBeEncoded, '/urlSelected');
     const serverDataResponse = await fetchGet({}, url);
 
-    updateForm(serverDataResponse, newPaginatorObject);
+    dispatch({
+      type: 'RETRIEVE_FORM_OBJECT_DATA',
+      serverDataResponse,
+      paginatorObject
+    });
   };
 
   /**
@@ -376,8 +307,9 @@ const UrlForm = () => {
    *
    */
   const clickLeft = async () => {
-    if (paginatorObject.leftIndex <= -1) return;
+    const { paginatorObject, currentSelectedUrl } = state.formObjectData;
 
+    if (paginatorObject.leftIndex <= -1) return;
     const newPaginatorObject = {
       leftIndex: paginatorObject.leftIndex - 1,
       pageIndex: paginatorObject.pageIndex - 1,
@@ -393,7 +325,11 @@ const UrlForm = () => {
     const url = stringBuilder(variablesToBeEncoded, '/urlSelected');
     const serverDataResponse = await fetchGet({}, url);
 
-    updatePageIndex(serverDataResponse.totalChunks, newPaginatorObject);
+    dispatch({
+      type: 'RETRIEVE_FORM_OBJECT_DATA',
+      serverDataResponse,
+      newPaginatorObject
+    });
   };
 
   /**
@@ -403,6 +339,7 @@ const UrlForm = () => {
    *
    */
   const clickRight = async () => {
+    const { paginatorObject, currentSelectedUrl } = state.formObjectData;
     if (paginatorObject.rightIndex >= paginatorObject.totalChunks) return;
 
     const newPaginatorObject = {
@@ -419,8 +356,11 @@ const UrlForm = () => {
 
     const url = stringBuilder(variablesToBeEncoded, '/urlSelected');
     const serverDataResponse = await fetchGet({}, url);
-
-    updateForm(serverDataResponse, newPaginatorObject);
+    dispatch({
+      type: 'RETRIEVE_FORM_OBJECT_DATA',
+      serverDataResponse,
+      newPaginatorObject
+    });
   };
 
   /**
@@ -431,6 +371,8 @@ const UrlForm = () => {
    *
    */
   const goToTheEnd = async () => {
+    const { paginatorObject, currentSelectedUrl } = state.formObjectData;
+
     const newPaginatorObject = {
       leftIndex: paginatorObject.totalChunks - 2,
       pageIndex: paginatorObject.totalChunks - 1,
@@ -446,32 +388,43 @@ const UrlForm = () => {
     const url = stringBuilder(variablesToBeEncoded, '/urlSelected');
     const serverDataResponse = await fetchGet({}, url);
 
-    updateForm(serverDataResponse, newPaginatorObject);
+    dispatch({
+      type: 'RETRIEVE_FORM_OBJECT_DATA',
+      serverDataResponse,
+      newPaginatorObject
+    });
   };
 
   return (
     <div className="mainContainer">
-      <NateForm
-        urlText={urlText}
-        submit={submit}
-        currentSelectedUrl={currentSelectedUrl.urlString}
-        onChangeSelect={onChangeSelect}
-        historyUrl={historyUrl}
-        deleteUrl={deleteUrl}
-        updateUrl={updateUrl}
-        updateCurrentUrlName={updateCurrentUrlName}
-      />
-      <div id="errorMessage">{errorMessage}</div>
-      <Row>
-        <Paginator
-          goToTheBegining={goToTheBegining}
-          clickLeft={clickLeft}
-          clickRight={clickRight}
-          goToTheEnd={goToTheEnd}
-          paginatorObject={paginatorObject}
+      <StateContext.Provider value={{ state, dispatch }}>
+        <NateForm
+          urlText={urlText}
+          submit={submit}
+          currentSelectedUrl={state.formObjectData.currentSelectedUrl.urlString}
+          onChangeSelect={onChangeSelect}
+          historyUrl={state.formObjectData.historyUrl}
+          deleteUrl={deleteUrl}
+          updateUrl={updateUrl}
+          updateCurrentUrlName={updateCurrentUrlName}
         />
-      </Row>
-      <WordTable loadingMessage={loadingMessage} words={words} />
+        <div id="errorMessage">{errorMessage}</div>
+        <Row>
+          <Paginator
+            goToTheBegining={goToTheBegining}
+            clickLeft={clickLeft}
+            clickRight={clickRight}
+            goToTheEnd={goToTheEnd}
+            paginatorObject={state.formObjectData.paginatorObject}
+            dispatch={dispatch}
+            state={state}
+          />
+        </Row>
+        <WordTable
+          loadingMessage={loadingMessage}
+          words={state.formObjectData.words}
+        />
+      </StateContext.Provider>
     </div>
   );
 };

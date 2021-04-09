@@ -24,26 +24,13 @@ const Paginator = ({
   goToTheEnd,
   paginatorObject
 }) => {
-  const toTheBegining = () => {
-    goToTheBegining();
-  };
-  const toTheEnd = () => {
-    goToTheEnd();
-  };
-  const clickR = () => {
-    clickRight();
-  };
-  const clickL = () => {
-    clickLeft();
-  };
-
   return (
     <Row>
       <Col>
         <div className="pagination1">
           <Pagination>
             <Pagination.First
-              onClick={toTheBegining}
+              onClick={goToTheBegining}
               disabled={paginatorObject.isLeftDisabled}
             />
 
@@ -51,7 +38,7 @@ const Paginator = ({
               ''
             ) : (
               <Pagination.Item
-                onClick={clickL}
+                onClick={clickLeft}
                 disabled={paginatorObject.isLeftDisabled}
               >
                 {paginatorObject.leftIndex + 1}
@@ -73,7 +60,7 @@ const Paginator = ({
               ''
             ) : (
               <Pagination.Item
-                onClick={clickR}
+                onClick={clickRight}
                 disabled={paginatorObject.isRightDisabled}
               >
                 {paginatorObject.rightIndex + 1}
@@ -81,7 +68,7 @@ const Paginator = ({
             )}
 
             <Pagination.Last
-              onClick={toTheEnd}
+              onClick={goToTheEnd}
               disabled={paginatorObject.isRightDisabled}
             />
           </Pagination>

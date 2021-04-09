@@ -10,36 +10,31 @@
  * description: this file handles the form entry
  */
 
-import React from 'react';
+import React, { useContext } from 'react';
 import 'bootstrap/dist/css/bootstrap.css';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
+import StateContext from '../utils/contexts';
 
+/**
+ *
+ *
+ * @param {obj} props
+ * @return {Html}
+ */
 const NateForm = (props) => {
   const {
     urlText,
     submit,
-    currentSelectedUrl,
     onChangeSelect,
-    historyUrl,
     deleteUrl,
     updateUrl,
     updateCurrentUrlName
   } = props;
-
-  const sub = () => {
-    submit();
-  };
-
-  const UrlDelete = () => {
-    deleteUrl();
-  };
-
-  const urlUpdate = () => {
-    updateUrl();
-  };
+  const { state } = useContext(StateContext);
+  const { historyUrl, currentSelectedUrl } = state.formObjectData;
 
   return (
     <Form.Group id="nateForm" encType="multipart/form-data">
@@ -53,7 +48,7 @@ const NateForm = (props) => {
           />
         </Col>
         <Col>
-          <Button type="button" onClick={sub} id="submit">
+          <Button type="button" onClick={submit} id="submit">
             Submit
           </Button>
         </Col>
@@ -62,7 +57,7 @@ const NateForm = (props) => {
         <Col className="center">
           <Form.Control
             as="select"
-            value={currentSelectedUrl}
+            value={currentSelectedUrl.urlString}
             onChange={onChangeSelect}
           >
             {historyUrl.map((url, index) => (
@@ -73,7 +68,7 @@ const NateForm = (props) => {
           </Form.Control>
         </Col>
         <Col>
-          <Button type="button" onClick={UrlDelete} id="delete">
+          <Button type="button" onClick={deleteUrl} id="delete">
             Delete
           </Button>
         </Col>
@@ -88,7 +83,7 @@ const NateForm = (props) => {
           />
         </Col>
         <Col>
-          <Button type="button" onClick={urlUpdate} id="submit">
+          <Button type="button" onClick={updateUrl} id="submit">
             Update
           </Button>
         </Col>
