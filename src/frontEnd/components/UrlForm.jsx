@@ -16,7 +16,7 @@ import NateForm from './NateForm';
 import WordTable from './WordTable';
 import appReducer from '../reducers/appReducer';
 import StateContext from '../utils/contexts';
-import serverUrl from './utilComponentData/constants';
+import SERVERURL from './utilComponentData/constants';
 import { stringBuilder } from '../utils/utlilFunctions';
 import '../css/index.css';
 
@@ -70,7 +70,7 @@ const UrlForm = () => {
    * @param {*} form
    */
   const fetchRequest = (options, url) => {
-    const newUrl = serverUrl + url;
+    const newUrl = SERVERURL + url;
     return fetch(newUrl, options)
       .then(
         (response) => response.json(),
@@ -397,7 +397,7 @@ const UrlForm = () => {
 
   return (
     <div className="mainContainer">
-      <StateContext.Provider value={{ state, dispatch }}>
+      <StateContext.Provider value={{ state, dispatch, onChangeSelect }}>
         <NateForm
           urlText={urlText}
           submit={submit}
